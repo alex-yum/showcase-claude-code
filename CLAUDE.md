@@ -38,6 +38,81 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 4. **Database migrations only** - never manual schema changes (use Flyway/Prisma Migrate)
 5. **Independent deployability** - each microservice must deploy independently
 
+## Test Execution Requirements (NON-NEGOTIABLE)
+
+**ALL code changes MUST have passing tests before commit. NO EXCEPTIONS.**
+
+### Enforcement Rules
+
+1. **TDD Cycle (Red-Green-Refactor):**
+   - Write failing test first
+   - **RUN THE TEST** - verify it fails for the right reason
+   - Implement minimum code to pass
+   - **RUN THE TEST** - verify it passes
+   - Refactor if needed
+   - **RUN THE TEST** - verify it still passes
+
+2. **Refactoring:**
+   - **RUN ALL TESTS** before refactoring
+   - Make changes
+   - **RUN ALL TESTS** after refactoring
+   - If tests fail, fix immediately or revert
+
+3. **Missing Test Infrastructure:**
+   - Missing test infrastructure (Maven wrapper, package.json, etc.) is a **BLOCKER**
+   - **STOP IMMEDIATELY** and set up test infrastructure first
+   - Never proceed with "structure only" - tests must be executable
+
+### Blocking Verification Checklist
+
+Before ANY commit, verify:
+- [ ] Test infrastructure exists and is executable
+- [ ] All tests run successfully
+- [ ] No tests were skipped or bypassed
+- [ ] Test output was reviewed for warnings/errors
+
+### Test Commands by Service
+
+**Java/Spring Boot Services (auth-service, order-service, payment-service, admin-service):**
+```bash
+cd backend/services/{service-name}
+./mvnw test
+```
+
+**Go Services (product-service, search-service, promotion-service, analytics-service):**
+```bash
+cd backend/services/{service-name}
+go test ./...
+```
+
+**NestJS Services (api-gateway, user-service, cart-service, notification-service):**
+```bash
+cd backend/services/{service-name}
+npm test
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm test
+```
+
+**AI Modules:**
+```bash
+cd ai-modules/{module-name}
+pytest
+```
+
+### NO BYPASSES
+
+- "I'll run tests later" ❌
+- "Tests are too slow" ❌
+- "Just a small change" ❌
+- "Following TDD structure without running tests" ❌
+- **Missing test infrastructure is a blocker, not an excuse to skip verification** ❌
+
+**If you cannot run tests, you cannot proceed. Period.**
+
 ## Documentation Map
 
 **Start here based on your task:**

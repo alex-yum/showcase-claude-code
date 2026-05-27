@@ -1,0 +1,58 @@
+name: Auth Service CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/services/auth-service/**'
+      - '.github/workflows/auth-service-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'backend/services/auth-service/**'
+      - '.github/workflows/auth-service-ci.yml'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Verify Maven wrapper exists
+        run: |
+          if [ ! -f "backend/services/auth-service/mvnw" ]; then
+            echo "ERROR: Maven wrapper not found"
+            exit 1
+          fi
+
+      - name: Run tests
+        run: |
+          cd backend/services/auth-service
+          ./mvnw test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: backend/services/auth-service/target/surefire-reports/
+
+      - name: Test Summary
+        if: always()
+        run: |
+          cd backend/services/auth-service
+          if [ -d "target/surefire-reports" ]; then
+            echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Tests completed. Check artifacts for detailed reports." >> $GITHUB_STEP_SUMMARY
+          fi
