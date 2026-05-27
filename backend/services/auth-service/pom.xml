@@ -114,6 +114,13 @@
             <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Redis Testcontainers -->
+        <dependency>
+            <groupId>com.redis</groupId>
+            <artifactId>testcontainers-redis</artifactId>
+            <version>1.6.4</version>
+            <scope>test</scope>
+        </dependency>
         <!-- H2 for testing -->
         <dependency>
             <groupId>com.h2database</groupId>

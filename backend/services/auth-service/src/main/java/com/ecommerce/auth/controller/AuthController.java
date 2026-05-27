@@ -55,7 +55,7 @@ public class AuthController {
         String deviceInfo = httpServletRequest.getHeader("User-Agent");
         String ipAddress = getClientIp(httpServletRequest);
 
-        String token = authService.login(
+        Map<String, Object> loginResult = authService.login(
                 request.getEmail(),
                 request.getPassword(),
                 request.isRememberMe(),
@@ -64,8 +64,9 @@ public class AuthController {
         );
 
         LoginResponse response = new LoginResponse();
-        response.setAccessToken(token);
+        response.setAccessToken((String) loginResult.get("token"));
         response.setTokenType("Bearer");
+        response.setExpiresIn(((Number) loginResult.get("expiresIn")).longValue());
         response.setEmail(request.getEmail());
 
         return ResponseEntity.ok(response);

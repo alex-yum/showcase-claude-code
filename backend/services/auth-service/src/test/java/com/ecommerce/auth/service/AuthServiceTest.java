@@ -42,6 +42,9 @@ class AuthServiceTest {
     @Mock
     private RateLimitService rateLimitService;
 
+    @Mock
+    private com.ecommerce.auth.config.JwtConfig jwtConfig;
+
     @InjectMocks
     private AuthService authService;
 
@@ -107,7 +110,7 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("login() should return JWT token when credentials are valid")
+    @DisplayName("login() should return JWT token and expiresIn when credentials are valid")
     void login_shouldReturnToken_whenCredentialsAreValid() {
         // Arrange
         String email = "test@example.com";
@@ -117,6 +120,7 @@ class AuthServiceTest {
         boolean rememberMe = false;
         String sessionId = "session-123";
         String expectedToken = "jwt.token.here";
+        long expirationMs = 86400000L; // 24 hours
 
         when(rateLimitService.isLocked(email)).thenReturn(false);
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(testUser));
@@ -125,12 +129,15 @@ class AuthServiceTest {
                 .thenReturn(sessionId);
         when(jwtService.generateToken(testUser.getId(), email, sessionId, rememberMe))
                 .thenReturn(expectedToken);
+        when(jwtConfig.getExpirationMs()).thenReturn(expirationMs);
 
         // Act
-        String result = authService.login(email, password, rememberMe, deviceInfo, ipAddress);
+        Map<String, Object> result = authService.login(email, password, rememberMe, deviceInfo, ipAddress);
 
         // Assert
-        assertThat(result).isEqualTo(expectedToken);
+        assertThat(result).isNotNull();
+        assertThat(result.get("token")).isEqualTo(expectedToken);
+        assertThat(result.get("expiresIn")).isEqualTo(86400L); // 24 hours in seconds
 
         verify(rateLimitService).isLocked(email);
         verify(userRepository).findByEmail(email);
@@ -138,6 +145,7 @@ class AuthServiceTest {
         verify(sessionService).createSession(testUser.getId(), email, deviceInfo, ipAddress, rememberMe);
         verify(jwtService).generateToken(testUser.getId(), email, sessionId, rememberMe);
         verify(rateLimitService).clearAttempts(email);
+        verify(jwtConfig).getExpirationMs();
     }
 
     @Test

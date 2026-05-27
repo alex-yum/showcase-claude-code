@@ -22,19 +22,22 @@ public class AuthService {
     private final JwtService jwtService;
     private final SessionService sessionService;
     private final RateLimitService rateLimitService;
+    private final com.ecommerce.auth.config.JwtConfig jwtConfig;
 
     public AuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             SessionService sessionService,
-            RateLimitService rateLimitService
+            RateLimitService rateLimitService,
+            com.ecommerce.auth.config.JwtConfig jwtConfig
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.sessionService = sessionService;
         this.rateLimitService = rateLimitService;
+        this.jwtConfig = jwtConfig;
     }
 
     /**
@@ -73,12 +76,12 @@ public class AuthService {
      * @param rememberMe Whether to create extended session
      * @param deviceInfo Device information (User-Agent)
      * @param ipAddress  Client IP address
-     * @return JWT token
+     * @return Map containing token and expiresIn (in seconds)
      * @throws AccountLockedException      if account is locked due to failed attempts
      * @throws InvalidCredentialsException if credentials are invalid
      */
     @Transactional
-    public String login(String email, String password, boolean rememberMe, String deviceInfo, String ipAddress) {
+    public Map<String, Object> login(String email, String password, boolean rememberMe, String deviceInfo, String ipAddress) {
         // Check if account is locked
         if (rateLimitService.isLocked(email)) {
             throw new AccountLockedException(email, 15 * 60 * 1000); // 15 minutes in milliseconds
@@ -110,7 +113,17 @@ public class AuthService {
         );
 
         // Generate JWT token
-        return jwtService.generateToken(user.getId(), email, sessionId, rememberMe);
+        String token = jwtService.generateToken(user.getId(), email, sessionId, rememberMe);
+
+        // Calculate expiresIn (in seconds)
+        long expiresInMs = rememberMe ? jwtConfig.getRememberMeExpirationMs() : jwtConfig.getExpirationMs();
+        long expiresInSeconds = expiresInMs / 1000;
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("token", token);
+        result.put("expiresIn", expiresInSeconds);
+
+        return result;
     }
 
     /**

@@ -90,9 +90,12 @@ class AuthControllerTest {
         request.setPassword("Password123!");
         request.setRememberMe(false);
 
-        String mockToken = "jwt.token.here";
+        Map<String, Object> mockLoginResult = new HashMap<>();
+        mockLoginResult.put("token", "jwt.token.here");
+        mockLoginResult.put("expiresIn", 86400L);
+
         when(authService.login(anyString(), anyString(), anyBoolean(), anyString(), anyString()))
-                .thenReturn(mockToken);
+                .thenReturn(mockLoginResult);
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/auth/login")
@@ -101,8 +104,9 @@ class AuthControllerTest {
                         .header("X-Forwarded-For", "192.168.1.1")
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value(mockToken))
+                .andExpect(jsonPath("$.accessToken").value("jwt.token.here"))
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.expiresIn").value(86400L))
                 .andExpect(jsonPath("$.userId").doesNotExist())
                 .andExpect(jsonPath("$.email").value("test@example.com"));
 
