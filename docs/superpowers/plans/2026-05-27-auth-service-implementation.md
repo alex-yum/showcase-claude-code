@@ -129,9 +129,9 @@ Create `backend/services/auth-service/pom.xml`:
     <description>Authentication and authorization microservice</description>
     
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <jjwt.version>0.12.3</jjwt.version>
-        <testcontainers.version>1.19.3</testcontainers.version>
+        <testcontainers.version>1.21.1</testcontainers.version>
     </properties>
     
     <dependencies>
@@ -288,8 +288,8 @@ Authentication and authorization microservice for the B2C e-commerce platform.
 
 ## Tech Stack
 
-- Java 17
-- Spring Boot 3.2.5
+- Java 21
+- Spring Boot 3.4.1
 - Spring Security 6
 - PostgreSQL 15+
 - Redis 7+

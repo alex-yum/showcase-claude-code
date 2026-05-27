@@ -13,8 +13,8 @@ Authentication and authorization microservice for the B2C e-commerce platform.
 
 ## Tech Stack
 
-- Java 17
-- Spring Boot 3.2.5
+- Java 21
+- Spring Boot 3.4.1
 - Spring Security 6
 - PostgreSQL 15+
 - Redis 7+
