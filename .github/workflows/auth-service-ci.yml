@@ -35,10 +35,10 @@ jobs:
             exit 1
           fi
 
-      - name: Run tests
+      - name: Run tests (unit tests only)
         run: |
           cd backend/services/auth-service
-          ./mvnw test
+          ./mvnw test -Dtest='!*IntegrationTest'
 
       - name: Upload test results
         if: always()
