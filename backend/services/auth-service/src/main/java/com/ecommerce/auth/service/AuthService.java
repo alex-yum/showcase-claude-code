@@ -1,10 +1,12 @@
 package com.ecommerce.auth.service;
 
+import com.ecommerce.auth.constants.RateLimitConstants;
 import com.ecommerce.auth.exception.AccountLockedException;
 import com.ecommerce.auth.exception.InvalidCredentialsException;
 import com.ecommerce.auth.exception.InvalidTokenException;
 import com.ecommerce.auth.exception.UserAlreadyExistsException;
 import com.ecommerce.auth.model.entity.User;
+import com.ecommerce.auth.model.enums.AccountStatus;
 import com.ecommerce.auth.repository.UserRepository;
 import io.jsonwebtoken.JwtException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -62,7 +64,7 @@ public class AuthService {
         User user = new User();
         user.setEmail(email);
         user.setPasswordHash(hashedPassword);
-        user.setAccountStatus("ACTIVE");
+        user.setAccountStatus(AccountStatus.ACTIVE);
 
         // Save and return
         return userRepository.save(user);
@@ -84,7 +86,7 @@ public class AuthService {
     public Map<String, Object> login(String email, String password, boolean rememberMe, String deviceInfo, String ipAddress) {
         // Check if account is locked
         if (rateLimitService.isLocked(email)) {
-            throw new AccountLockedException(email, 15 * 60 * 1000); // 15 minutes in milliseconds
+            throw new AccountLockedException(email, RateLimitConstants.LOCKOUT_DURATION_MILLIS);
         }
 
         // Find user by email

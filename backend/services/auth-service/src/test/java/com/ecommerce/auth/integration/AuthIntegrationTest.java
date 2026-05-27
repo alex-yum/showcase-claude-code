@@ -1,5 +1,6 @@
 package com.ecommerce.auth.integration;
 
+import com.ecommerce.auth.constants.SessionConstants;
 import com.ecommerce.auth.config.TestContainersConfig;
 import com.ecommerce.auth.model.dto.LoginRequest;
 import com.ecommerce.auth.model.dto.LoginResponse;
@@ -191,7 +192,7 @@ public class AuthIntegrationTest {
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").exists())
-                .andExpect(jsonPath("$.expiresIn").value(2592000)) // 30 days in seconds
+                .andExpect(jsonPath("$.expiresIn").value(SessionConstants.REMEMBER_ME_TTL_SECONDS))
                 .andReturn();
 
         LoginResponse loginResponse = objectMapper.readValue(
@@ -199,8 +200,8 @@ public class AuthIntegrationTest {
                 LoginResponse.class
         );
 
-        // Verify expiresIn is set to 30 days (2592000 seconds)
-        assertThat(loginResponse.getExpiresIn()).isEqualTo(2592000L);
+        // Verify expiresIn is set to 30 days
+        assertThat(loginResponse.getExpiresIn()).isEqualTo(SessionConstants.REMEMBER_ME_TTL_SECONDS);
         assertThat(loginResponse.getAccessToken()).isNotEmpty();
     }
 }

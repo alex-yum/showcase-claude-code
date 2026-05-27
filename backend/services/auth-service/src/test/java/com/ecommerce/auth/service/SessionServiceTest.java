@@ -1,5 +1,7 @@
 package com.ecommerce.auth.service;
 
+import com.ecommerce.auth.constants.RedisKeys;
+import com.ecommerce.auth.constants.SessionConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,7 +64,7 @@ class SessionServiceTest {
             timeUnitCaptor.capture()
         );
 
-        assertThat(keyCaptor.getValue()).isEqualTo("session:" + sessionId);
+        assertThat(keyCaptor.getValue()).isEqualTo(RedisKeys.SESSION_PREFIX + sessionId);
 
         Map<String, Object> sessionData = valueCaptor.getValue();
         assertThat(sessionData.get("userId")).isEqualTo(userId);
@@ -73,7 +75,7 @@ class SessionServiceTest {
         assertThat(sessionData.get("createdAt")).isInstanceOf(LocalDateTime.class);
         assertThat(sessionData.get("lastActivityAt")).isInstanceOf(LocalDateTime.class);
 
-        assertThat(timeoutCaptor.getValue()).isEqualTo(24L);
+        assertThat(timeoutCaptor.getValue()).isEqualTo(SessionConstants.DEFAULT_TTL_HOURS);
         assertThat(timeUnitCaptor.getValue()).isEqualTo(TimeUnit.HOURS);
     }
 
@@ -102,7 +104,7 @@ class SessionServiceTest {
             timeUnitCaptor.capture()
         );
 
-        assertThat(timeoutCaptor.getValue()).isEqualTo(30L);
+        assertThat(timeoutCaptor.getValue()).isEqualTo(SessionConstants.REMEMBER_ME_TTL_DAYS);
         assertThat(timeUnitCaptor.getValue()).isEqualTo(TimeUnit.DAYS);
     }
 
@@ -120,7 +122,7 @@ class SessionServiceTest {
             "lastActivityAt", LocalDateTime.now()
         );
 
-        when(valueOperations.get("session:" + sessionId)).thenReturn(sessionData);
+        when(valueOperations.get(RedisKeys.SESSION_PREFIX + sessionId)).thenReturn(sessionData);
 
         // When
         Map<String, Object> result = sessionService.getSession(sessionId);
@@ -137,7 +139,7 @@ class SessionServiceTest {
     void shouldReturnNullForNonExistentSession() {
         // Given
         String sessionId = "non-existent-session";
-        when(valueOperations.get("session:" + sessionId)).thenReturn(null);
+        when(valueOperations.get(RedisKeys.SESSION_PREFIX + sessionId)).thenReturn(null);
 
         // When
         Map<String, Object> result = sessionService.getSession(sessionId);
@@ -152,8 +154,8 @@ class SessionServiceTest {
         String existingSessionId = "existing-session";
         String nonExistingSessionId = "non-existing-session";
 
-        when(redisTemplate.hasKey("session:" + existingSessionId)).thenReturn(true);
-        when(redisTemplate.hasKey("session:" + nonExistingSessionId)).thenReturn(false);
+        when(redisTemplate.hasKey("RedisKeys.SESSION_PREFIX" + existingSessionId)).thenReturn(true);
+        when(redisTemplate.hasKey("RedisKeys.SESSION_PREFIX" + nonExistingSessionId)).thenReturn(false);
 
         // When
         boolean exists = sessionService.sessionExists(existingSessionId);
@@ -173,7 +175,7 @@ class SessionServiceTest {
         sessionService.deleteSession(sessionId);
 
         // Then
-        verify(redisTemplate).delete("session:" + sessionId);
+        verify(redisTemplate).delete(RedisKeys.SESSION_PREFIX + sessionId);
     }
 
     @Test
@@ -190,7 +192,7 @@ class SessionServiceTest {
             "lastActivityAt", LocalDateTime.now().minusMinutes(30)
         );
 
-        when(valueOperations.get("session:" + sessionId)).thenReturn(sessionData);
+        when(valueOperations.get(RedisKeys.SESSION_PREFIX + sessionId)).thenReturn(sessionData);
 
         // When
         sessionService.updateLastActivity(sessionId);
@@ -201,7 +203,7 @@ class SessionServiceTest {
 
         verify(valueOperations).set(keyCaptor.capture(), valueCaptor.capture());
 
-        assertThat(keyCaptor.getValue()).isEqualTo("session:" + sessionId);
+        assertThat(keyCaptor.getValue()).isEqualTo(RedisKeys.SESSION_PREFIX + sessionId);
 
         Map<String, Object> updatedData = valueCaptor.getValue();
         assertThat(updatedData.get("userId")).isEqualTo(12345L);

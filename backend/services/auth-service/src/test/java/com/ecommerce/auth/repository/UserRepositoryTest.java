@@ -1,6 +1,7 @@
 package com.ecommerce.auth.repository;
 
 import com.ecommerce.auth.model.entity.User;
+import com.ecommerce.auth.model.enums.AccountStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -23,7 +24,7 @@ class UserRepositoryTest {
         User user = new User();
         user.setEmail("test@example.com");
         user.setPasswordHash("hashed-password");
-        user.setAccountStatus("ACTIVE");
+        user.setAccountStatus(AccountStatus.ACTIVE);
 
         // When
         User savedUser = userRepository.save(user);
@@ -50,7 +51,7 @@ class UserRepositoryTest {
         User user = new User();
         user.setEmail("exists@example.com");
         user.setPasswordHash("hashed-password");
-        user.setAccountStatus("ACTIVE");
+        user.setAccountStatus(AccountStatus.ACTIVE);
         userRepository.save(user);
 
         // When

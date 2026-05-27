@@ -1,5 +1,6 @@
 package com.ecommerce.auth.model.entity;
 
+import com.ecommerce.auth.model.enums.AccountStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -17,8 +18,9 @@ public class User {
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "account_status", nullable = false, length = 20)
-    private String accountStatus = "ACTIVE";
+    private AccountStatus accountStatus = AccountStatus.ACTIVE;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -62,11 +64,11 @@ public class User {
         this.passwordHash = passwordHash;
     }
 
-    public String getAccountStatus() {
+    public AccountStatus getAccountStatus() {
         return accountStatus;
     }
 
-    public void setAccountStatus(String accountStatus) {
+    public void setAccountStatus(AccountStatus accountStatus) {
         this.accountStatus = accountStatus;
     }
 

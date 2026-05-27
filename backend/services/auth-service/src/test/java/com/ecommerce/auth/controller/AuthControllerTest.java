@@ -1,5 +1,7 @@
 package com.ecommerce.auth.controller;
 
+import com.ecommerce.auth.constants.SessionConstants;
+
 import com.ecommerce.auth.exception.AccountLockedException;
 import com.ecommerce.auth.exception.InvalidCredentialsException;
 import com.ecommerce.auth.exception.InvalidTokenException;
@@ -92,7 +94,7 @@ class AuthControllerTest {
 
         Map<String, Object> mockLoginResult = new HashMap<>();
         mockLoginResult.put("token", "jwt.token.here");
-        mockLoginResult.put("expiresIn", 86400L);
+        mockLoginResult.put("expiresIn", SessionConstants.DEFAULT_TTL_SECONDS);
 
         when(authService.login(anyString(), anyString(), anyBoolean(), anyString(), anyString()))
                 .thenReturn(mockLoginResult);
@@ -106,7 +108,7 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").value("jwt.token.here"))
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
-                .andExpect(jsonPath("$.expiresIn").value(86400L))
+                .andExpect(jsonPath("$.expiresIn").value(SessionConstants.DEFAULT_TTL_SECONDS))
                 .andExpect(jsonPath("$.userId").doesNotExist())
                 .andExpect(jsonPath("$.email").value("test@example.com"));
 

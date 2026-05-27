@@ -1,10 +1,12 @@
 package com.ecommerce.auth.service;
 
+import com.ecommerce.auth.constants.SessionConstants;
 import com.ecommerce.auth.exception.AccountLockedException;
 import com.ecommerce.auth.exception.InvalidCredentialsException;
 import com.ecommerce.auth.exception.InvalidTokenException;
 import com.ecommerce.auth.exception.UserAlreadyExistsException;
 import com.ecommerce.auth.model.entity.User;
+import com.ecommerce.auth.model.enums.AccountStatus;
 import com.ecommerce.auth.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -56,7 +58,7 @@ class AuthServiceTest {
         testUser.setId(1L);
         testUser.setEmail("test@example.com");
         testUser.setPasswordHash("$2a$12$hashedPassword");
-        testUser.setAccountStatus("ACTIVE");
+        testUser.setAccountStatus(AccountStatus.ACTIVE);
     }
 
     @Test
@@ -83,7 +85,7 @@ class AuthServiceTest {
         assertThat(result.getId()).isEqualTo(2L);
         assertThat(result.getEmail()).isEqualTo(email);
         assertThat(result.getPasswordHash()).isEqualTo(hashedPassword);
-        assertThat(result.getAccountStatus()).isEqualTo("ACTIVE");
+        assertThat(result.getAccountStatus()).isEqualTo(AccountStatus.ACTIVE);
 
         verify(userRepository).existsByEmail(email);
         verify(passwordEncoder).encode(password);
@@ -137,7 +139,7 @@ class AuthServiceTest {
         // Assert
         assertThat(result).isNotNull();
         assertThat(result.get("token")).isEqualTo(expectedToken);
-        assertThat(result.get("expiresIn")).isEqualTo(86400L); // 24 hours in seconds
+        assertThat(result.get("expiresIn")).isEqualTo(SessionConstants.DEFAULT_TTL_SECONDS);
 
         verify(rateLimitService).isLocked(email);
         verify(userRepository).findByEmail(email);

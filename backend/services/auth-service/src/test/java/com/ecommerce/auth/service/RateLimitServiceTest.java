@@ -1,5 +1,7 @@
 package com.ecommerce.auth.service;
 
+import com.ecommerce.auth.constants.RateLimitConstants;
+import com.ecommerce.auth.constants.RedisKeys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,44 +38,44 @@ class RateLimitServiceTest {
     void shouldIncrementFailedAttemptsOnFirstAttempt() {
         // Given
         String email = "test@example.com";
-        when(valueOperations.increment("login:attempts:" + email)).thenReturn(1L);
-        when(redisTemplate.hasKey("login:attempts:" + email)).thenReturn(false);
+        when(valueOperations.increment(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email)).thenReturn(1L);
+        when(redisTemplate.hasKey(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email)).thenReturn(false);
 
         // When
         rateLimitService.trackFailedAttempt(email);
 
         // Then
-        verify(valueOperations).increment("login:attempts:" + email);
-        verify(redisTemplate).expire("login:attempts:" + email, 15, TimeUnit.MINUTES);
-        verify(valueOperations, never()).set(startsWith("login:lockout:"), any(), anyLong(), any(TimeUnit.class));
+        verify(valueOperations).increment(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email);
+        verify(redisTemplate).expire(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email, RateLimitConstants.LOCKOUT_DURATION_MINUTES, TimeUnit.MINUTES);
+        verify(valueOperations, never()).set(startsWith(RedisKeys.LOGIN_LOCKOUT_PREFIX), any(), anyLong(), any(TimeUnit.class));
     }
 
     @Test
     void shouldSetTTLOnFirstFailedAttempt() {
         // Given
         String email = "test@example.com";
-        when(valueOperations.increment("login:attempts:" + email)).thenReturn(1L);
-        when(redisTemplate.hasKey("login:attempts:" + email)).thenReturn(false);
+        when(valueOperations.increment(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email)).thenReturn(1L);
+        when(redisTemplate.hasKey(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email)).thenReturn(false);
 
         // When
         rateLimitService.trackFailedAttempt(email);
 
         // Then
-        verify(redisTemplate).expire("login:attempts:" + email, 15, TimeUnit.MINUTES);
+        verify(redisTemplate).expire(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email, RateLimitConstants.LOCKOUT_DURATION_MINUTES, TimeUnit.MINUTES);
     }
 
     @Test
     void shouldNotSetTTLOnSubsequentAttempts() {
         // Given
         String email = "test@example.com";
-        when(valueOperations.increment("login:attempts:" + email)).thenReturn(2L);
-        when(redisTemplate.hasKey("login:attempts:" + email)).thenReturn(true);
+        when(valueOperations.increment(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email)).thenReturn(2L);
+        when(redisTemplate.hasKey(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email)).thenReturn(true);
 
         // When
         rateLimitService.trackFailedAttempt(email);
 
         // Then
-        verify(valueOperations).increment("login:attempts:" + email);
+        verify(valueOperations).increment(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email);
         verify(redisTemplate, never()).expire(anyString(), anyLong(), any(TimeUnit.class));
     }
 
@@ -81,14 +83,14 @@ class RateLimitServiceTest {
     void shouldLockAccountAfterFifthFailedAttempt() {
         // Given
         String email = "test@example.com";
-        when(valueOperations.increment("login:attempts:" + email)).thenReturn(5L);
+        when(valueOperations.increment(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email)).thenReturn(5L);
 
         // When
         rateLimitService.trackFailedAttempt(email);
 
         // Then
         verify(valueOperations).set(
-            eq("login:lockout:" + email),
+            eq(RedisKeys.LOGIN_LOCKOUT_PREFIX + email),
             any(LocalDateTime.class),
             eq(15L),
             eq(TimeUnit.MINUTES)
@@ -99,7 +101,7 @@ class RateLimitServiceTest {
     void shouldReturnTrueWhenAccountIsLocked() {
         // Given
         String email = "test@example.com";
-        when(redisTemplate.hasKey("login:lockout:" + email)).thenReturn(true);
+        when(redisTemplate.hasKey(RedisKeys.LOGIN_LOCKOUT_PREFIX + email)).thenReturn(true);
 
         // When
         boolean isLocked = rateLimitService.isLocked(email);
@@ -112,7 +114,7 @@ class RateLimitServiceTest {
     void shouldReturnFalseWhenAccountIsNotLocked() {
         // Given
         String email = "test@example.com";
-        when(redisTemplate.hasKey("login:lockout:" + email)).thenReturn(false);
+        when(redisTemplate.hasKey(RedisKeys.LOGIN_LOCKOUT_PREFIX + email)).thenReturn(false);
 
         // When
         boolean isLocked = rateLimitService.isLocked(email);
@@ -130,14 +132,14 @@ class RateLimitServiceTest {
         rateLimitService.clearAttempts(email);
 
         // Then
-        verify(redisTemplate).delete("login:attempts:" + email);
+        verify(redisTemplate).delete(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email);
     }
 
     @Test
     void shouldGetAttemptCount() {
         // Given
         String email = "test@example.com";
-        when(valueOperations.get("login:attempts:" + email)).thenReturn(3);
+        when(valueOperations.get(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email)).thenReturn(3);
 
         // When
         int count = rateLimitService.getAttemptCount(email);
@@ -150,7 +152,7 @@ class RateLimitServiceTest {
     void shouldReturnZeroWhenNoAttempts() {
         // Given
         String email = "test@example.com";
-        when(valueOperations.get("login:attempts:" + email)).thenReturn(null);
+        when(valueOperations.get(RedisKeys.LOGIN_ATTEMPTS_PREFIX + email)).thenReturn(null);
 
         // When
         int count = rateLimitService.getAttemptCount(email);
