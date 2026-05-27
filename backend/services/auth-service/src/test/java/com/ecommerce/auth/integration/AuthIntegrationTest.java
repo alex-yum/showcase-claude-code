@@ -63,7 +63,7 @@ public class AuthIntegrationTest {
                 registerResult.getResponse().getContentAsString(),
                 RegisterResponse.class
         );
-        assertThat(registerResponse.getId()).isNotNull();
+        assertThat(registerResponse.getUserId()).isNotNull();
 
         // Step 2: Login with the registered user
         LoginRequest loginRequest = new LoginRequest();
