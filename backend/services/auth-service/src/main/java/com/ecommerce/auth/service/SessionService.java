@@ -24,14 +24,15 @@ public class SessionService {
         String sessionId = UUID.randomUUID().toString();
         String key = RedisKeys.SESSION_PREFIX + sessionId;
 
+        LocalDateTime now = LocalDateTime.now();
         Map<String, Object> sessionData = new HashMap<>();
         sessionData.put("userId", userId);
         sessionData.put("email", email);
         sessionData.put("deviceInfo", deviceInfo);
         sessionData.put("ipAddress", ipAddress);
         sessionData.put("rememberMe", rememberMe);
-        sessionData.put("createdAt", LocalDateTime.now());
-        sessionData.put("lastActivityAt", LocalDateTime.now());
+        sessionData.put("createdAt", now);
+        sessionData.put("lastActivityAt", now);
 
         if (rememberMe) {
             redisTemplate.opsForValue().set(key, sessionData, SessionConstants.REMEMBER_ME_TTL_DAYS, TimeUnit.DAYS);
