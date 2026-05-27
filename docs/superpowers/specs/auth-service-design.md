@@ -152,7 +152,7 @@ Value: {lockout_timestamp}
 
 ### **gRPC API (Internal - Service-to-Service)**
 
-**Protocol Buffer Definition:** `auth.proto`
+**Protocol Buffer Definition:** `shared/proto/auth.proto` (monorepo shared location)
 
 ```protobuf
 syntax = "proto3";
@@ -349,14 +349,12 @@ Authorization: Bearer {token}
 
 ## Component Structure
 
-### Project Structure (Polyrepo - Separate GitHub Repository)
+### Project Structure (Monorepo - Under /backend/services/)
 
 ```
-auth-service/ (GitHub repo root)
+backend/services/auth-service/ (within monorepo)
 ├── src/
 │   ├── main/
-│   │   ├── proto/
-│   │   │   └── auth.proto
 │   │   ├── java/com/ecommerce/auth/
 │   │   │   ├── AuthServiceApplication.java
 │   │   │   ├── config/
@@ -411,10 +409,6 @@ auth-service/ (GitHub repo root)
 │   ├── auth-secrets.yaml
 │   ├── auth-deployment.yaml
 │   └── auth-service.yaml
-├── .github/
-│   └── workflows/
-│       ├── ci.yml
-│       └── deploy.yml
 ├── Dockerfile
 ├── docker-compose.yml (local PostgreSQL + Redis)
 ├── pom.xml
@@ -423,13 +417,20 @@ auth-service/ (GitHub repo root)
 └── docs/
     ├── API.md
     └── DEPLOYMENT.md
+
+Note: Proto files are shared across all services:
+  - Located at: ../../shared/proto/auth.proto
+  - Referenced in pom.xml via protobuf-maven-plugin
+  - All services use shared proto definitions for consistent contracts
 ```
 
-**Rationale for Polyrepo:**
-- Clear ownership per microservice
-- Independent deployment lifecycle
-- Supports polyglot architecture (Java, Go, NestJS across different repos)
-- Smaller repository size
+**Rationale for Monorepo Structure:**
+- Shared proto files simplify cross-service contract management
+- Single CI/CD pipeline can orchestrate all services
+- Easier local development (single git clone)
+- Independent deployment still maintained (each service has own Dockerfile/K8s manifests)
+- Supports polyglot architecture (Java, Go, NestJS in different subdirectories)
+- Aligns with CLAUDE.md project structure guidelines
 
 ### Component Responsibilities
 
@@ -827,6 +828,8 @@ class AuthIntegrationTest {
 
 ### Maven Dependencies (pom.xml excerpt)
 
+**Note:** pom.xml must include protobuf-maven-plugin configured to read from `../../shared/proto/` directory.
+
 ```xml
 <dependencies>
     <!-- Spring Boot -->
@@ -1025,13 +1028,17 @@ kubectl port-forward svc/auth-service 8080:8080
 
 ### CI/CD Pipeline (GitHub Actions)
 
+**Location:** Root-level `.github/workflows/auth-service-ci.yml` (monorepo structure)
+
 **Workflow stages:**
-1. **Build:** `mvn clean package`
-2. **Unit Tests:** `mvn test` (100% coverage validation)
+1. **Build:** `cd backend/services/auth-service && mvn clean package`
+2. **Unit Tests:** `mvn test` (100% coverage validation with JaCoCo)
 3. **Integration Tests:** `mvn verify` (Testcontainers)
 4. **Security Scan:** Snyk or Dependabot
-5. **Docker Build:** Build and push to Docker Hub
-6. **Deploy:** `kubectl apply -f k8s/` (update Kubernetes deployment)
+5. **Docker Build:** Build and push to Docker Hub (from auth-service directory)
+6. **Deploy:** `kubectl apply -f backend/services/auth-service/k8s/` (update Kubernetes deployment)
+
+**Trigger:** Changes to `backend/services/auth-service/**` or `shared/proto/auth.proto`
 
 ---
 
