@@ -154,8 +154,8 @@ class SessionServiceTest {
         String existingSessionId = "existing-session";
         String nonExistingSessionId = "non-existing-session";
 
-        when(redisTemplate.hasKey("RedisKeys.SESSION_PREFIX" + existingSessionId)).thenReturn(true);
-        when(redisTemplate.hasKey("RedisKeys.SESSION_PREFIX" + nonExistingSessionId)).thenReturn(false);
+        when(redisTemplate.hasKey(RedisKeys.SESSION_PREFIX + existingSessionId)).thenReturn(true);
+        when(redisTemplate.hasKey(RedisKeys.SESSION_PREFIX + nonExistingSessionId)).thenReturn(false);
 
         // When
         boolean exists = sessionService.sessionExists(existingSessionId);
@@ -182,17 +182,17 @@ class SessionServiceTest {
     void shouldUpdateLastActivityTimestamp() {
         // Given
         String sessionId = "test-session-id";
-        Map<String, Object> sessionData = Map.of(
-            "userId", 12345L,
-            "email", "test@example.com",
-            "deviceInfo", "Chrome 120 / Windows 10",
-            "ipAddress", "192.168.1.1",
-            "rememberMe", false,
-            "createdAt", LocalDateTime.now().minusHours(1),
-            "lastActivityAt", LocalDateTime.now().minusMinutes(30)
-        );
+        Map<String, Object> sessionData = new HashMap<>();
+        sessionData.put("userId", 12345L);
+        sessionData.put("email", "test@example.com");
+        sessionData.put("deviceInfo", "Chrome 120 / Windows 10");
+        sessionData.put("ipAddress", "192.168.1.1");
+        sessionData.put("rememberMe", false);
+        sessionData.put("createdAt", LocalDateTime.now().minusHours(1));
+        sessionData.put("lastActivityAt", LocalDateTime.now().minusMinutes(30));
 
         when(valueOperations.get(RedisKeys.SESSION_PREFIX + sessionId)).thenReturn(sessionData);
+        when(redisTemplate.getExpire(RedisKeys.SESSION_PREFIX + sessionId, TimeUnit.SECONDS)).thenReturn(3600L);
 
         // When
         sessionService.updateLastActivity(sessionId);
@@ -200,10 +200,14 @@ class SessionServiceTest {
         // Then
         ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Map> valueCaptor = ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<Long> ttlCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<TimeUnit> unitCaptor = ArgumentCaptor.forClass(TimeUnit.class);
 
-        verify(valueOperations).set(keyCaptor.capture(), valueCaptor.capture());
+        verify(valueOperations).set(keyCaptor.capture(), valueCaptor.capture(), ttlCaptor.capture(), unitCaptor.capture());
 
         assertThat(keyCaptor.getValue()).isEqualTo(RedisKeys.SESSION_PREFIX + sessionId);
+        assertThat(ttlCaptor.getValue()).isEqualTo(3600L);
+        assertThat(unitCaptor.getValue()).isEqualTo(TimeUnit.SECONDS);
 
         Map<String, Object> updatedData = valueCaptor.getValue();
         assertThat(updatedData.get("userId")).isEqualTo(12345L);

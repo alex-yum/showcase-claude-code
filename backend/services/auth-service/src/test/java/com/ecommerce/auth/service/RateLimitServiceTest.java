@@ -92,7 +92,7 @@ class RateLimitServiceTest {
         verify(valueOperations).set(
             eq(RedisKeys.LOGIN_LOCKOUT_PREFIX + email),
             any(LocalDateTime.class),
-            eq(15L),
+            eq(RateLimitConstants.LOCKOUT_DURATION_MINUTES),
             eq(TimeUnit.MINUTES)
         );
     }

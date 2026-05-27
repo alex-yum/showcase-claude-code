@@ -67,7 +67,20 @@ public class SessionService {
 
         if (sessionData != null) {
             sessionData.put("lastActivityAt", LocalDateTime.now());
-            redisTemplate.opsForValue().set(key, sessionData);
+
+            // Retrieve existing TTL and reapply it to prevent session from becoming permanent
+            Long ttl = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+            if (ttl != null && ttl > 0) {
+                redisTemplate.opsForValue().set(key, sessionData, ttl, TimeUnit.SECONDS);
+            } else {
+                // Fallback: reapply default TTL based on rememberMe flag
+                Boolean rememberMe = (Boolean) sessionData.get("rememberMe");
+                long defaultTtl = Boolean.TRUE.equals(rememberMe)
+                    ? SessionConstants.REMEMBER_ME_TTL_DAYS
+                    : SessionConstants.DEFAULT_TTL_HOURS;
+                TimeUnit defaultUnit = Boolean.TRUE.equals(rememberMe) ? TimeUnit.DAYS : TimeUnit.HOURS;
+                redisTemplate.opsForValue().set(key, sessionData, defaultTtl, defaultUnit);
+            }
         }
     }
 }
