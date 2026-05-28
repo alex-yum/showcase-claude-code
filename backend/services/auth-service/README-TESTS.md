@@ -97,12 +97,15 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 
 ### GitHub Actions
 - Configured in `.github/workflows/auth-service-ci.yml`
-- Runs unit tests only (integration tests excluded)
+- Runs all tests (unit + integration)
 - Uses Java 21
+- Docker available via GitHub Actions runner
 
 ### Pre-commit Hook
 - Located at `.git/hooks/pre-commit`
-- Automatically runs unit tests before commit
+- Automatically runs tests before commit:
+  - **With Docker running:** All tests (unit + integration)
+  - **Without Docker:** Unit tests only (with warning)
 - Blocks commit if tests fail
 - Uses Java 21
 
