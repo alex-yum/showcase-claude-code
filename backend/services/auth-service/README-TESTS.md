@@ -16,7 +16,6 @@
 
 **Run unit tests:**
 ```bash
-export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 ./mvnw test -Dtest='!*IntegrationTest'
 ```
 
@@ -50,7 +49,6 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 
 **Run integration tests:**
 ```bash
-export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 ./mvnw test -Dtest='*IntegrationTest'
 ```
 
@@ -59,15 +57,14 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 
 **Run all tests:**
 ```bash
-export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 ./mvnw test
 ```
 
 ## Test Infrastructure
 
 ### Java Version
-- **Required:** Java 21 (installed at `/opt/homebrew/opt/openjdk@21`)
-- Tests run with Java 21 via Maven (set in `JAVA_HOME`)
+- **Required:** Java 21 (system default)
+- Tests run with Java 21 via Maven
 - Java 25 has Mockito compatibility issues (resolved by using Java 21)
 
 ### Test Database
@@ -82,16 +79,13 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 
 ### Quick Test (Unit Tests Only)
 ```bash
-export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 ./mvnw test -Dtest='!*IntegrationTest'
 ```
 
 ### All Tests
 ```bash
-export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 ./mvnw test
 ```
-*Note: Will fail on integration tests due to Docker issue*
 
 ## CI/CD
 
