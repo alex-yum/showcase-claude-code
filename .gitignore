@@ -26,13 +26,26 @@ Thumbs.db
 .env.*.local
 *.env
 
-# Secrets
+# Secrets (but not source code files)
 *.key
 *.pem
 *.crt
 secrets/
-*secret*
-*credential*
+*secret.txt
+*secret.yml
+*secret.yaml
+*secret.json
+*secret.xml
+*secret.properties
+*credential.txt
+*credential.yml
+*credential.yaml
+*credential.json
+*credential.xml
+*credential.properties
+credentials.json
+credentials.yml
+credentials.yaml
 
 # Build artifacts (future)
 target/
