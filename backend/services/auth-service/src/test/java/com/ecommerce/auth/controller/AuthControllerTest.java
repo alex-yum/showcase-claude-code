@@ -10,6 +10,8 @@ import com.ecommerce.auth.model.dto.LoginRequest;
 import com.ecommerce.auth.model.dto.RegisterRequest;
 import com.ecommerce.auth.model.entity.User;
 import com.ecommerce.auth.service.AuthService;
+import com.ecommerce.auth.service.JwtService;
+import com.ecommerce.auth.service.SessionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,12 @@ class AuthControllerTest {
 
     @MockBean
     private AuthService authService;
+
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private SessionService sessionService;
 
     @Test
     @DisplayName("POST /api/v1/auth/register should register user successfully")

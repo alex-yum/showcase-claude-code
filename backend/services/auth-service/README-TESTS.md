@@ -6,40 +6,61 @@
 **Status:** 41/41 passing
 
 **Coverage:**
-- Repository tests: 3 tests
-- Controller tests: 6 tests  
-- Service tests: 32 tests (AuthService, JwtService, RateLimitService, SessionServiceTest)
+- Repository tests: 3 tests (UserRepositoryTest)
+- Controller tests: 6 tests (AuthControllerTest)
+- Service tests: 32 tests
+  - AuthServiceTest: 9 tests
+  - JwtServiceTest: 7 tests
+  - RateLimitServiceTest: 9 tests
+  - SessionServiceTest: 7 tests
 
 **Run unit tests:**
 ```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 ./mvnw test -Dtest='!*IntegrationTest'
 ```
 
-### Integration Tests ⚠️
-**Status:** Currently disabled due to Docker/Testcontainers compatibility issue
+### Integration Tests ✅
+**Status:** 4/4 passing - All integration tests working!
 
-**Issue:** Testcontainers 1.21.1 + docker-java 3.7.1 cannot connect to Docker Desktop 29.2.1 on macOS  
-- Error: "Could not find a valid Docker environment" (Status 400 BadRequestException)
-- Docker works fine via CLI/curl
-- Known API version negotiation issue between docker-java and Docker Desktop 29.x
+**Fixed Issues:**
+1. ✅ **Docker connectivity:** Upgraded to Testcontainers 2.0.5 for Docker Desktop 29.x compatibility
+   - Fixed module naming: `postgresql` → `testcontainers-postgresql`, `junit-jupiter` → `testcontainers-junit-jupiter`
+   - PostgreSQL and Redis containers start successfully
 
-**Affected Tests:**
-- `AuthIntegrationTest` (4 tests) - requires PostgreSQL + Redis containers
+2. ✅ **Redis serialization:** Configured ObjectMapper with JavaTimeModule for LocalDateTime support
+   - Updated RedisConfig to use custom ObjectMapper with JSR-310 support
+   - Session storage now works correctly with LocalDateTime fields
 
-**Workarounds Attempted:**
-1. ✅ Upgraded Testcontainers 1.20.4 → 1.21.1
-2. ✅ Upgraded docker-java to 3.7.1 (latest)
-3. ✅ Switched Docker context to `default`
-4. ❌ Still failing with Docker connection error
+3. ✅ **JWT authentication:** Created JwtAuthenticationFilter for Spring Security
+   - Added filter to SecurityFilterChain
+   - Configured authenticationEntryPoint to return 401 for unauthenticated requests
+   - JWT tokens now properly authenticated in integration tests
 
-**To Fix:**
-- Wait for Test containers 1.22.x with better Docker 29.x support
-- OR downgrade Docker Desktop to 27.x-28.x
-- OR investigate docker-java client configuration further
+4. ✅ **Test assertions:** Fixed account lockout test expectations
+   - Renamed `shouldEnforceRateLimiting` → `shouldLockAccountAfterFailedLoginAttempts`
+   - Updated assertions to expect HTTP 423 (Locked) instead of 403 (Forbidden)
 
-**Run integration tests (will fail):**
+**Test Results:**
+- `AuthIntegrationTest` (4 tests): All passing
+  - `shouldCompleteFullAuthFlow` ✅
+  - `shouldRejectDuplicateRegistration` ✅
+  - `shouldHandleRememberMeLogin` ✅
+  - `shouldLockAccountAfterFailedLoginAttempts` ✅
+
+**Run integration tests:**
 ```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 ./mvnw test -Dtest='*IntegrationTest'
+```
+
+### All Tests ✅
+**Total:** 45/45 passing (41 unit + 4 integration)
+
+**Run all tests:**
+```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
+./mvnw test
 ```
 
 ## Test Infrastructure
@@ -98,12 +119,15 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 - Redis 7-alpine
 - Auto-configured via Spring Boot Testcontainers support
 
-## Known Issues
+## Known Issues - All Resolved! ✅
 
-1. **Mockito + Java 25:** Fixed by using Java 21
-2. **H2 + Flyway:** PostgreSQL-specific migrations don't work with H2. Fixed by disabling Flyway in tests.
-3. **Test containers + Docker 29.x:** Currently unresolved. Unit tests provide sufficient coverage.
-4. **CSRF in controller tests:** Fixed by adding `@AutoConfigureMockMvc(addFilters = false)`
+1. **Mockito + Java 25:** ✅ Fixed by using Java 21
+2. **H2 + Flyway:** ✅ Fixed by disabling Flyway in tests (PostgreSQL-specific migrations incompatible with H2)
+3. **Testcontainers + Docker 29.x:** ✅ Fixed by upgrading to Testcontainers 2.0.5
+4. **CSRF in controller tests:** ✅ Fixed by adding `@AutoConfigureMockMvc(addFilters = false)`
+5. **Redis LocalDateTime serialization:** ✅ Fixed by configuring ObjectMapper with JavaTimeModule in RedisConfig
+6. **JWT authentication in tests:** ✅ Fixed by creating JwtAuthenticationFilter and adding to SecurityFilterChain
+7. **Test assertions:** ✅ Fixed account lockout test to expect HTTP 423 (Locked)
 
 ## Test Coverage Goals
 

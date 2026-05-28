@@ -108,9 +108,9 @@ public class AuthIntegrationTest {
     }
 
     @Test
-    void shouldEnforceRateLimiting() throws Exception {
+    void shouldLockAccountAfterFailedLoginAttempts() throws Exception {
         // Register a user first
-        String testEmail = "ratelimit.test@example.com";
+        String testEmail = "lockout.test@example.com";
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setEmail(testEmail);
         registerRequest.setPassword(TEST_PASSWORD);
@@ -120,7 +120,7 @@ public class AuthIntegrationTest {
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated());
 
-        // Attempt 5 failed logins
+        // Attempt 5 failed logins with wrong password
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail(testEmail);
         loginRequest.setPassword("WrongPassword123!");
@@ -132,19 +132,19 @@ public class AuthIntegrationTest {
                     .andExpect(status().isUnauthorized());
         }
 
-        // 6th attempt should result in account locked
+        // 6th attempt should result in account locked (HTTP 423)
         mockMvc.perform(post(BASE_URL + "/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isLocked())
                 .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("locked")));
 
-        // Even with correct password, account should be locked
+        // Even with correct password, account should remain locked
         loginRequest.setPassword(TEST_PASSWORD);
         mockMvc.perform(post(BASE_URL + "/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isLocked());
     }
 
     @Test
