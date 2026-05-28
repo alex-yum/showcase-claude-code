@@ -1,5 +1,6 @@
 target/
-!.mvn/wrapper/maven-wrapper.jar
+
+# Exclude JAR/WAR files
 *.jar
 *.war
 *.ear
@@ -7,7 +8,12 @@ target/
 *.tar.gz
 *.rar
 
-.mvn/
+# Maven wrapper - keep required files for reproducible builds
+!.mvn/
+!.mvn/wrapper/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
 .idea/
 *.iml
 *.iws
