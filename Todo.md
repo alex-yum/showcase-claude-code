@@ -3,6 +3,7 @@
 - [x] Agent to run test always and not skipped silently because infrastructure is not ready.
   - Instruction added to CLAUDE.md.
 - [x] Hard gate (pre-commit hook and GHA CI) to enforce testing is passed for every new and changed code.
+- [ ] Validate test coverage
 - [ ] Add Test Architect and/or Skill to plan and write comprehensive test cases like boundary value, invalid data element, failure injection and so on.
 - [ ] Evaluate the need to annotate test as unit, integration, functional, smoke, sanity and regression test.
 
