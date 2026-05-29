@@ -131,32 +131,38 @@ npm install clsx tailwind-merge date-fns
 npm install framer-motion
 ```
 
-- [ ] **Step 4: Install testing dependencies**
+- [ ] **Step 4: Lock TypeScript version**
+
+```bash
+npm install -D typescript@5.7
+```
+
+- [ ] **Step 5: Install testing dependencies**
 
 ```bash
 npm install -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom
 ```
 
-- [ ] **Step 5: Install MSW**
+- [ ] **Step 6: Install MSW**
 
 ```bash
 npm install -D msw@latest
 ```
 
-- [ ] **Step 6: Install Playwright**
+- [ ] **Step 7: Install Playwright**
 
 ```bash
 npm install -D @playwright/test
 npx playwright install
 ```
 
-- [ ] **Step 7: Install dev tools**
+- [ ] **Step 8: Install dev tools**
 
 ```bash
 npm install -D @next/bundle-analyzer @tailwindcss/forms
 ```
 
-- [ ] **Step 8: Verify package.json**
+- [ ] **Step 9: Verify package.json**
 
 Run:
 
@@ -166,7 +172,7 @@ cat package.json
 
 Expected: All packages listed in dependencies/devDependencies.
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 10: Commit**
 
 ```bash
 git add package.json package-lock.json
@@ -883,7 +889,93 @@ git commit -m "feat: setup MSW with auth endpoints"
 
 ---
 
+## Task 10.5: Initialize MSW Browser Worker
+
+**Files:**
+- Modify: `frontend/app/layout.tsx`
+
+- [ ] **Step 1: Add MSW initialization to root layout**
+
+Edit `frontend/app/layout.tsx`, add MSW initialization before the component:
+
+```typescript
+import type { Metadata } from 'next'
+import { Playfair_Display, DM_Sans } from 'next/font/google'
+import { AuthProvider } from '@/lib/auth/context'
+import './globals.css'
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+  variable: '--font-playfair',
+  display: 'swap',
+})
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+})
+
+export const metadata: Metadata = {
+  title: 'ShopHub - Luxury Shopping Experience',
+  description: 'AI-powered luxury e-commerce platform',
+}
+
+// Initialize MSW in development
+if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+  import('@/mocks/browser').then(({ worker }) => {
+    worker.start({
+      onUnhandledRequest: 'bypass',
+    })
+  })
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" className={`${playfair.variable} ${dmSans.variable}`}>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
+    </html>
+  )
+}
+```
+
+- [ ] **Step 2: Test MSW intercepts requests**
+
+Run:
+
+```bash
+npm run dev
+```
+
+Open browser console. You should see MSW message: "[MSW] Mocking enabled."
+
+Try making a test API call in console:
+```javascript
+fetch('/api/v1/auth/login', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: 'test@example.com', password: 'Test123!@#'})}).then(r => r.json()).then(console.log)
+```
+
+Expected: See mocked response with `accessToken: 'mock-jwt-token'`. Stop server.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add app/layout.tsx
+git commit -m "feat: initialize MSW browser worker in development"
+```
+
+---
+
 ## Task 11: Create Auth TypeScript Types
+
+**Note:** Tasks 11-22 continue with auth system implementation...
 
 **Files:**
 - Create: `frontend/lib/types/auth.ts`
@@ -2319,3 +2411,18 @@ Part B depends on all infrastructure and auth system from Part A.
 - Centralized API client
 - AuthContext provides app-wide auth state
 - useProtectedRoute for route protection
+
+**Security Warning:**
+⚠️ **localStorage auth is vulnerable to XSS attacks.** This is a temporary MVP solution only. If an attacker injects malicious JavaScript into the page, they can steal the JWT token from localStorage. 
+
+**Mitigation timeline:**
+- **Current sprint (Part A):** localStorage with proper input sanitization
+- **Next sprint (API Gateway ready):** Migrate to HTTP-only cookies (see design spec section "Migration Path")
+- HTTP-only cookies are immune to XSS token theft
+
+**Why localStorage in MVP:**
+- API Gateway not implemented yet (can't set HTTP-only cookies from backend)
+- Architecture designed for easy migration (only `/lib/auth/` changes)
+- Next.js built-in XSS protection mitigates risk (React escapes by default)
+
+Do NOT ship to production with localStorage auth without security review.
