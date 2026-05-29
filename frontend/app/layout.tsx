@@ -21,6 +21,15 @@ export const metadata: Metadata = {
   viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
 }
 
+// Initialize MSW in development
+if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+  import('@/mocks/browser').then(({ worker }) => {
+    worker.start({
+      onUnhandledRequest: 'bypass',
+    })
+  })
+}
+
 export default function RootLayout({
   children,
 }: {
