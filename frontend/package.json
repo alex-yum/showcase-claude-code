@@ -24,6 +24,7 @@
     "typescript": "5.7.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@hookform/resolvers": "^3",
     "@next/bundle-analyzer": "^15",
     "@playwright/test": "^1.48",
