@@ -32,3 +32,4 @@
 
 - [ ] Caveman for token efficiency.
 - [ ] Permanently grant read permission to avoid being asked numerous times to run compound bash commands like source, npm, ls, etc and so on during implementation by subagents. Explore /fewer-permission-prompts.
+- [ ] Increase frontend test coverage.
