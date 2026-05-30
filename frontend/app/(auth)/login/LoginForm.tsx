@@ -1,14 +1,21 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff } from 'lucide-react'
 import { loginSchema } from '@/lib/utils/validators'
+import { authApi } from '@/lib/api/auth'
+import { useAuth } from '@/lib/hooks/useAuth'
 import type { LoginRequest } from '@/lib/types/auth'
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { login: authLogin } = useAuth()
 
   const {
     register,
@@ -24,8 +31,24 @@ export default function LoginForm() {
   })
 
   const onSubmit = async (data: LoginRequest & { rememberMe: boolean }) => {
-    console.log('Form submitted:', data)
-    // TODO: Call authApi.login() in next task
+    try {
+      setApiError(null)
+
+      // Call auth API
+      const response = await authApi.login({
+        email: data.email,
+        password: data.password,
+      })
+
+      // Update auth context
+      await authLogin(response)
+
+      // Redirect to returnTo URL or dashboard
+      const returnTo = searchParams.get('returnTo') || '/dashboard'
+      router.push(returnTo)
+    } catch (error: any) {
+      setApiError(error.message || 'Login failed. Please try again.')
+    }
   }
 
   return (
@@ -40,6 +63,16 @@ export default function LoginForm() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* API Error Banner */}
+        {apiError && (
+          <div
+            className="bg-red-500/10 border border-red-500/20 rounded-lg p-4"
+            role="alert"
+          >
+            <p className="font-body text-sm text-red-400">{apiError}</p>
+          </div>
+        )}
+
         {/* Email field */}
         <div>
           <label htmlFor="email" className="block font-body text-sm font-medium text-gray-300 mb-2">
