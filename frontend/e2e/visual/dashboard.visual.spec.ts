@@ -19,20 +19,26 @@ test.describe('Dashboard Visual Regression', () => {
           body: JSON.stringify({
             orders: [
               {
-                id: '1234',
-                orderNumber: '#1234',
-                date: '2026-05-28',
-                status: 'Delivered',
+                orderId: '1234',
+                userId: 1,
+                status: 'delivered',
                 total: 79.99,
-                items: [{ name: 'Premium Cotton T-Shirt', quantity: 2 }]
+                items: [
+                  { productId: 1, name: 'Premium Cotton T-Shirt', quantity: 2, price: 39.99 }
+                ],
+                createdAt: '2026-05-28T10:30:00Z',
+                updatedAt: '2026-05-29T14:20:00Z'
               },
               {
-                id: '1235',
-                orderNumber: '#1235',
-                date: '2026-05-25',
-                status: 'In Transit',
+                orderId: '1235',
+                userId: 1,
+                status: 'shipped',
                 total: 129.50,
-                items: [{ name: 'Designer Jeans', quantity: 1 }]
+                items: [
+                  { productId: 2, name: 'Designer Jeans', quantity: 1, price: 129.50 }
+                ],
+                createdAt: '2026-05-25T08:15:00Z',
+                updatedAt: '2026-05-26T16:45:00Z'
               }
             ]
           })
@@ -44,25 +50,34 @@ test.describe('Dashboard Visual Regression', () => {
           body: JSON.stringify({
             products: [
               {
-                id: '1',
+                productId: 1,
                 name: 'Premium Cotton T-Shirt',
+                description: 'Luxuriously soft everyday essential',
                 price: 39.99,
-                image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400',
-                category: 'Clothing'
+                rating: 4.5,
+                reviewCount: 234,
+                imageUrl: null,
+                inStock: true
               },
               {
-                id: '2',
+                productId: 2,
                 name: 'Designer Jeans',
+                description: 'Premium denim with perfect fit',
                 price: 129.50,
-                image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400',
-                category: 'Clothing'
+                rating: 4.8,
+                reviewCount: 567,
+                imageUrl: null,
+                inStock: true
               },
               {
-                id: '3',
+                productId: 3,
                 name: 'Leather Wallet',
+                description: 'Genuine leather craftsmanship',
                 price: 59.99,
-                image: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=400',
-                category: 'Accessories'
+                rating: 4.6,
+                reviewCount: 189,
+                imageUrl: null,
+                inStock: true
               }
             ]
           })

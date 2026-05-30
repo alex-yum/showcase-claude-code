@@ -35,7 +35,8 @@ const STATUS_CONFIG = {
 }
 
 export default function OrderCard({ order }: OrderCardProps) {
-  const statusConfig = STATUS_CONFIG[order.status]
+  // Fallback to pending config if status is not recognized
+  const statusConfig = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending
   const StatusIcon = statusConfig.icon
 
   const formattedDate = new Date(order.createdAt).toLocaleDateString('en-US', {

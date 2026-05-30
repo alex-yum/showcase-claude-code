@@ -13,16 +13,30 @@ import type { Product, UserStats } from '@/lib/types/product'
 export default function DashboardPage() {
   useProtectedRoute()
 
-  const { user } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [stats, setStats] = useState<UserStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Don't fetch if not authenticated or still loading auth
+    if (!isAuthenticated || authLoading) {
+      return
+    }
+
     async function fetchDashboardData() {
       try {
+        setError(null)
         const token = localStorage.getItem('token')
+
+        // Guard against null token
+        if (!token) {
+          setError('Authentication required')
+          setLoading(false)
+          return
+        }
 
         const [ordersRes, productsRes, statsRes] = await Promise.all([
           fetch('/api/v1/orders', {
@@ -36,27 +50,53 @@ export default function DashboardPage() {
           }),
         ])
 
+        // Check HTTP status before parsing
+        if (!ordersRes.ok || !productsRes.ok || !statsRes.ok) {
+          throw new Error('Failed to fetch dashboard data. Please try again.')
+        }
+
         const ordersData = await ordersRes.json()
         const productsData = await productsRes.json()
         const statsData = await statsRes.json()
 
         setOrders(ordersData.orders || [])
         setProducts(productsData.products || [])
-        setStats(statsData)
+        // Validate stats shape before setting
+        if (statsData && typeof statsData.ordersThisMonth === 'number') {
+          setStats(statsData)
+        }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error)
+        setError(error instanceof Error ? error.message : 'Failed to load dashboard data')
       } finally {
         setLoading(false)
       }
     }
 
     fetchDashboardData()
-  }, [])
+  }, [isAuthenticated, authLoading])
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="text-center">Loading...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <p className="text-red-600 font-semibold mb-2">Error Loading Dashboard</p>
+          <p className="text-red-500 text-sm mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     )
   }
