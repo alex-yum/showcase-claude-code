@@ -1,12 +1,15 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Eye, EyeOff } from 'lucide-react'
 import { loginSchema } from '@/lib/utils/validators'
 import type { LoginRequest } from '@/lib/types/auth'
 
 export default function LoginForm() {
+  const [showPassword, setShowPassword] = useState(false)
+
   const {
     register,
     handleSubmit,
@@ -62,14 +65,29 @@ export default function LoginForm() {
           <label htmlFor="password" className="block font-body text-sm font-medium text-gray-300 mb-2">
             Password
           </label>
-          <input
-            type="password"
-            id="password"
-            {...register('password')}
-            className="w-full px-4 py-3 rounded-lg bg-surface/40 border border-accent/20 text-white placeholder-gray-500 focus:outline-none focus:border-accent/60 transition-colors"
-            placeholder="••••••••"
-            disabled={isSubmitting}
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              {...register('password')}
+              className="w-full px-4 py-3 pr-12 rounded-lg bg-surface/40 border border-accent/20 text-white placeholder-gray-500 focus:outline-none focus:border-accent/60 transition-colors"
+              placeholder="••••••••"
+              disabled={isSubmitting}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+              aria-label="Toggle password visibility"
+              disabled={isSubmitting}
+            >
+              {showPassword ? (
+                <EyeOff className="w-5 h-5" />
+              ) : (
+                <Eye className="w-5 h-5" />
+              )}
+            </button>
+          </div>
           {errors.password && (
             <p className="mt-1 font-body text-sm text-red-400">
               {errors.password.message}
