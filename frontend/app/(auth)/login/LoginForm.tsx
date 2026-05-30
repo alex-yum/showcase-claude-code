@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { loginSchema } from '@/lib/utils/validators'
 import { authApi } from '@/lib/api/auth'
 import { useAuth } from '@/lib/hooks/useAuth'
@@ -42,7 +44,7 @@ export default function LoginForm() {
       })
 
       // Update auth context
-      await authLogin(response)
+      await authLogin(response as any)
 
       // Redirect to returnTo URL or dashboard
       const returnTo = searchParams.get('returnTo') || '/dashboard'
@@ -53,7 +55,7 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="bg-surface/40 backdrop-blur-xl border border-accent/10 rounded-2xl p-8 shadow-2xl">
+    <div className="bg-surface/40 backdrop-blur-xl border border-accent/10 rounded-2xl p-8 shadow-2xl animate-scale-in">
       <div className="mb-8">
         <h2 className="font-display text-3xl font-bold text-white mb-2">
           Sign In
@@ -67,7 +69,7 @@ export default function LoginForm() {
         {/* API Error Banner */}
         {apiError && (
           <div
-            className="bg-red-500/10 border border-red-500/20 rounded-lg p-4"
+            className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 animate-fade-in-up"
             role="alert"
           >
             <p className="font-body text-sm text-red-400">{apiError}</p>
@@ -79,13 +81,13 @@ export default function LoginForm() {
           <label htmlFor="email" className="block font-body text-sm font-medium text-gray-300 mb-2">
             Email Address
           </label>
-          <input
+          <Input
             type="email"
             id="email"
             {...register('email')}
-            className="w-full px-4 py-3 rounded-lg bg-surface/40 border border-accent/20 text-white placeholder-gray-500 focus:outline-none focus:border-accent/60 transition-colors"
             placeholder="you@example.com"
             disabled={isSubmitting}
+            className="w-full"
           />
           {errors.email && (
             <p className="mt-1 font-body text-sm text-red-400">
@@ -100,18 +102,18 @@ export default function LoginForm() {
             Password
           </label>
           <div className="relative">
-            <input
+            <Input
               type={showPassword ? 'text' : 'password'}
               id="password"
               {...register('password')}
-              className="w-full px-4 py-3 pr-12 rounded-lg bg-surface/40 border border-accent/20 text-white placeholder-gray-500 focus:outline-none focus:border-accent/60 transition-colors"
               placeholder="••••••••"
               disabled={isSubmitting}
+              className="w-full pr-12"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-accent/50 rounded"
               aria-label="Toggle password visibility"
               disabled={isSubmitting}
             >
@@ -130,27 +132,68 @@ export default function LoginForm() {
         </div>
 
         {/* Remember me checkbox */}
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="rememberMe"
-            {...register('rememberMe')}
-            className="w-4 h-4 rounded border-accent/20 text-accent focus:ring-accent cursor-pointer"
-            disabled={isSubmitting}
-          />
-          <label htmlFor="rememberMe" className="ml-2 font-body text-sm text-gray-300 cursor-pointer">
-            Remember me
-          </label>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              {...register('rememberMe')}
+              className="w-4 h-4 text-accent bg-surface border-accent/20 rounded focus:ring-accent/50 focus:ring-2 disabled:opacity-50"
+              disabled={isSubmitting}
+            />
+            <label htmlFor="rememberMe" className="ml-2 font-body text-sm text-gray-300">
+              Remember me
+            </label>
+          </div>
+          <a
+            href="/forgot-password"
+            className="font-body text-sm text-accent hover:text-accent-light transition-colors"
+          >
+            Forgot password?
+          </a>
         </div>
 
         {/* Submit button */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full py-3 px-4 rounded-lg bg-accent hover:bg-accent/90 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <Button type="submit" disabled={isSubmitting} className="w-full">
           {isSubmitting ? 'Signing in...' : 'Sign In'}
-        </button>
+        </Button>
+
+        {/* Social auth (static, coming soon) */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-accent/10" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 font-body text-gray-400 bg-surface/40">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            disabled
+            className="flex items-center justify-center px-4 py-2 border border-accent/10 rounded-lg font-body text-sm text-gray-400 bg-surface/20 cursor-not-allowed opacity-50"
+          >
+            <span className="mr-2">🔒</span> Google (Soon)
+          </button>
+          <button
+            type="button"
+            disabled
+            className="flex items-center justify-center px-4 py-2 border border-accent/10 rounded-lg font-body text-sm text-gray-400 bg-surface/20 cursor-not-allowed opacity-50"
+          >
+            <span className="mr-2">🔒</span> Apple (Soon)
+          </button>
+        </div>
+
+        {/* Sign up link */}
+        <p className="text-center font-body text-sm text-gray-400">
+          Don't have an account?{' '}
+          <a href="/signup" className="text-accent hover:text-accent-light transition-colors font-medium">
+            Sign up
+          </a>
+        </p>
       </form>
     </div>
   )
