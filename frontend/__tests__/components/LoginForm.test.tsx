@@ -124,3 +124,123 @@ describe('LoginForm - API Integration', () => {
     })
   })
 })
+
+describe('LoginForm - Validation Errors', () => {
+  it('shows email validation error on blur with invalid email', async () => {
+    const user = userEvent.setup()
+    render(<LoginForm />)
+
+    const emailInput = screen.getByLabelText(/email address/i)
+
+    await user.type(emailInput, 'invalid-email')
+    await user.tab() // Blur
+
+    await waitFor(() => {
+      expect(screen.getByText(/valid email required/i)).toBeInTheDocument()
+    })
+  })
+
+  it('shows password validation error on blur with weak password', async () => {
+    const user = userEvent.setup()
+    render(<LoginForm />)
+
+    // Get password input by ID to avoid matching the label or button
+    const passwordInput = document.getElementById('password') as HTMLInputElement
+
+    await user.type(passwordInput, 'weak')
+    await user.tab() // Blur
+
+    await waitFor(() => {
+      expect(screen.getByText(/minimum 8 characters/i)).toBeInTheDocument()
+    })
+  })
+
+  it('clears validation errors when input becomes valid', async () => {
+    const user = userEvent.setup()
+    render(<LoginForm />)
+
+    const emailInput = screen.getByLabelText(/email address/i)
+
+    // Enter invalid email
+    await user.type(emailInput, 'invalid')
+    await user.tab()
+
+    await waitFor(() => {
+      expect(screen.getByText(/valid email required/i)).toBeInTheDocument()
+    })
+
+    // Fix the email
+    await user.clear(emailInput)
+    await user.type(emailInput, 'valid@example.com')
+    await user.tab()
+
+    await waitFor(() => {
+      expect(screen.queryByText(/valid email required/i)).not.toBeInTheDocument()
+    })
+  })
+})
+
+describe('LoginForm - 401 Error Handling', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('displays 401 error banner for invalid credentials', async () => {
+    const user = userEvent.setup()
+    const error = new Error('Invalid credentials')
+    error.name = '401'
+    vi.mocked(authApi.authApi.login).mockRejectedValue(error)
+
+    render(<LoginForm />)
+
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.type(screen.getByPlaceholderText('••••••••'), 'WrongPassword123!')
+    await user.click(screen.getByRole('button', { name: /sign in/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument()
+      expect(screen.getByRole('alert')).toHaveTextContent('Invalid credentials')
+    })
+  })
+
+  it('clears error banner on retry', async () => {
+    const user = userEvent.setup()
+    const error = new Error('Invalid credentials')
+    error.name = '401'
+    vi.mocked(authApi.authApi.login)
+      .mockRejectedValueOnce(error)
+      .mockResolvedValueOnce({
+        accessToken: 'mock-token',
+        tokenType: 'Bearer',
+        expiresIn: 86400000,
+        userId: 1,
+        email: 'test@example.com',
+      })
+
+    render(<LoginForm />)
+
+    // First attempt - fails with error
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.type(screen.getByPlaceholderText('••••••••'), 'WrongPassword123!')
+    await user.click(screen.getByRole('button', { name: /sign in/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument()
+    })
+
+    // Clear form and retry
+    const emailInput = screen.getByLabelText(/email/i) as HTMLInputElement
+    const passwordInput = screen.getByPlaceholderText('••••••••') as HTMLInputElement
+
+    await user.clear(emailInput)
+    await user.clear(passwordInput)
+
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.type(screen.getByPlaceholderText('••••••••'), 'Test123!@#')
+    await user.click(screen.getByRole('button', { name: /sign in/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+  })
+})
