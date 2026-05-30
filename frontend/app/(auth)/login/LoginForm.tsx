@@ -23,6 +23,7 @@ export default function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginRequest & { rememberMe: boolean }>({
     resolver: zodResolver(loginSchema),
+    mode: 'onBlur',
     defaultValues: {
       email: '',
       password: '',
