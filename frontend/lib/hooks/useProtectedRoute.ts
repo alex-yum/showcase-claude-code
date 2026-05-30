@@ -2,16 +2,17 @@
 
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { authClient } from '../auth/client'
+import { useAuth } from './useAuth'
 
 export function useProtectedRoute() {
+  const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
 
   useEffect(() => {
-    if (!authClient.isAuthenticated()) {
+    if (!isLoading && !isAuthenticated) {
       const returnTo = encodeURIComponent(pathname)
       router.push(`/login?returnTo=${returnTo}`)
     }
-  }, [router, pathname])
+  }, [isAuthenticated, isLoading, router, pathname])
 }

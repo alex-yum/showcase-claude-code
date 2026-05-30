@@ -1,54 +1,60 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
-import { useRouter, usePathname } from 'next/navigation'
 import { useProtectedRoute } from '@/lib/hooks/useProtectedRoute'
-import { authClient } from '@/lib/auth/client'
 
+// Mock useAuth
+const mockPush = vi.fn()
 vi.mock('next/navigation', () => ({
-  useRouter: vi.fn(),
-  usePathname: vi.fn(),
+  useRouter: () => ({
+    push: mockPush,
+  }),
+  usePathname: () => '/dashboard',
 }))
 
-vi.mock('@/lib/auth/client', () => ({
-  authClient: {
-    isAuthenticated: vi.fn(),
-  },
+const mockUser = { userId: 1, email: 'test@example.com' }
+const mockUseAuth = vi.fn()
+vi.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => mockUseAuth(),
 }))
 
 describe('useProtectedRoute', () => {
-  const mockPush = vi.fn()
-  const mockRouter = { push: mockPush }
-
   beforeEach(() => {
     vi.clearAllMocks()
-    localStorage.clear()
-    vi.mocked(useRouter).mockReturnValue(mockRouter as any)
-    vi.mocked(usePathname).mockReturnValue('/dashboard')
-    vi.mocked(authClient.isAuthenticated).mockReturnValue(false)
   })
 
-  it('redirects to login when not authenticated', () => {
-    vi.mocked(authClient.isAuthenticated).mockReturnValue(false)
-
-    renderHook(() => useProtectedRoute())
-
-    expect(mockPush).toHaveBeenCalledWith('/login?returnTo=%2Fdashboard')
-  })
-
-  it('does not redirect when authenticated', () => {
-    vi.mocked(authClient.isAuthenticated).mockReturnValue(true)
+  it('does not redirect when user is authenticated', () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      isAuthenticated: true,
+      isLoading: false,
+    })
 
     renderHook(() => useProtectedRoute())
 
     expect(mockPush).not.toHaveBeenCalled()
   })
 
-  it('saves current path as returnTo', () => {
-    vi.mocked(usePathname).mockReturnValue('/profile/settings')
-    vi.mocked(authClient.isAuthenticated).mockReturnValue(false)
+  it('redirects to login when user is not authenticated', () => {
+    mockUseAuth.mockReturnValue({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+    })
 
     renderHook(() => useProtectedRoute())
 
-    expect(mockPush).toHaveBeenCalledWith('/login?returnTo=%2Fprofile%2Fsettings')
+    expect(mockPush).toHaveBeenCalledWith('/login?returnTo=%2Fdashboard')
+  })
+
+  it('does not redirect while loading', () => {
+    mockUseAuth.mockReturnValue({
+      user: null,
+      isAuthenticated: false,
+      isLoading: true,
+    })
+
+    renderHook(() => useProtectedRoute())
+
+    expect(mockPush).not.toHaveBeenCalled()
   })
 })
