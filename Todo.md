@@ -6,6 +6,8 @@
 - [ ] Validate test coverage
 - [ ] Add Test Architect and/or Skill to plan and write comprehensive test cases like boundary value, invalid data element, failure injection and so on.
 - [ ] Evaluate the need to annotate test as unit, integration, functional, smoke, sanity and regression test.
+- [ ] Automate agent to update pre-commit hook and GHA for testing & lint.
+- [ ] Automate agent to monitor GHA run after update.
 
 ---
 
