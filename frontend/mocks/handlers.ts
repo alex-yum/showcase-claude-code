@@ -68,4 +68,112 @@ export const handlers = [
       { status: 401 }
     )
   }),
+
+  // Orders: Get user orders
+  http.get(`${API_BASE}/api/v1/orders`, ({ request }) => {
+    const authHeader = request.headers.get('Authorization')
+
+    if (!authHeader?.startsWith('Bearer mock-jwt-token')) {
+      return HttpResponse.json(
+        { status: 401, error: 'Unauthorized', message: 'Invalid or missing token' },
+        { status: 401 }
+      )
+    }
+
+    return HttpResponse.json({
+      orders: [
+        {
+          orderId: '1234',
+          userId: 1,
+          status: 'shipped',
+          items: [
+            { productId: 1, name: 'Premium Cotton T-Shirt', quantity: 1, price: 44.99 },
+            { productId: 2, name: 'Leather Wallet', quantity: 1, price: 45.00 },
+          ],
+          total: 89.99,
+          createdAt: '2026-05-15T10:30:00Z',
+          updatedAt: '2026-05-16T14:20:00Z',
+        },
+        {
+          orderId: '1233',
+          userId: 1,
+          status: 'delivered',
+          items: [
+            { productId: 3, name: 'Sunglasses', quantity: 1, price: 45.50 },
+          ],
+          total: 45.50,
+          createdAt: '2026-05-10T08:15:00Z',
+          updatedAt: '2026-05-12T16:45:00Z',
+        },
+        {
+          orderId: '1232',
+          userId: 1,
+          status: 'pending',
+          items: [
+            { productId: 4, name: 'Smart Watch', quantity: 1, price: 99.99 },
+            { productId: 5, name: 'Phone Case', quantity: 1, price: 18.00 },
+            { productId: 6, name: 'Screen Protector', quantity: 1, price: 10.00 },
+          ],
+          total: 127.99,
+          createdAt: '2026-05-18T12:00:00Z',
+          updatedAt: '2026-05-18T12:00:00Z',
+        },
+      ],
+    })
+  }),
+
+  // Products: Get recommendations
+  http.get(`${API_BASE}/api/v1/products/recommendations`, ({ request }) => {
+    const authHeader = request.headers.get('Authorization')
+
+    if (!authHeader?.startsWith('Bearer mock-jwt-token')) {
+      return HttpResponse.json(
+        { status: 401, error: 'Unauthorized', message: 'Invalid or missing token' },
+        { status: 401 }
+      )
+    }
+
+    return HttpResponse.json({
+      products: [
+        {
+          productId: 10,
+          name: 'Premium Cotton T-Shirt',
+          description: 'Luxuriously soft everyday essential',
+          price: 24.99,
+          rating: 4.5,
+          reviewCount: 234,
+          imageUrl: null,
+          inStock: true,
+        },
+        {
+          productId: 11,
+          name: 'Wireless Headphones',
+          description: 'Studio-quality sound, premium comfort',
+          price: 89.99,
+          rating: 4.8,
+          reviewCount: 567,
+          imageUrl: null,
+          inStock: true,
+        },
+      ],
+    })
+  }),
+
+  // User Stats
+  http.get(`${API_BASE}/api/v1/users/stats`, ({ request }) => {
+    const authHeader = request.headers.get('Authorization')
+
+    if (!authHeader?.startsWith('Bearer mock-jwt-token')) {
+      return HttpResponse.json(
+        { status: 401, error: 'Unauthorized', message: 'Invalid or missing token' },
+        { status: 401 }
+      )
+    }
+
+    return HttpResponse.json({
+      ordersThisMonth: 5,
+      totalSpent: 237.50,
+      loyaltyPoints: 2450,
+    })
+  }),
 ]
