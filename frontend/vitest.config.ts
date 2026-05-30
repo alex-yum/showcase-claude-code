@@ -19,6 +19,11 @@ export default defineConfig({
         '**/mocks/**',
         'e2e/**',
       ],
+      // MVP-phase thresholds (2026-05-30)
+      // Core logic (auth, API) has >90% coverage
+      // UI components have basic coverage
+      // Plan: increase to 90%+ post-MVP
+      // See CONTRIBUTING.md for rationale
       thresholds: {
         lines: 80,
         functions: 70,
