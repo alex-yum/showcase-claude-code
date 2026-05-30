@@ -49,7 +49,7 @@ describe('ProductCard', () => {
 
   it('toggles wishlist icon on click', async () => {
     const user = userEvent.setup()
-    const { container } = render(<ProductCard product={mockProduct} />)
+    render(<ProductCard product={mockProduct} />)
 
     const wishlistButton = screen.getByRole('button', { name: /add to wishlist/i })
 

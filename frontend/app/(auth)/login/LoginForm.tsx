@@ -53,8 +53,9 @@ export default function LoginForm() {
         : '/dashboard'
 
       router.push(safeReturnTo)
-    } catch (error: any) {
-      setApiError(error.message || 'Login failed. Please try again.')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Login failed. Please try again.'
+      setApiError(errorMessage)
     }
   }
 
@@ -193,7 +194,7 @@ export default function LoginForm() {
 
         {/* Sign up link */}
         <p className="text-center font-body text-sm text-gray-400">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <a href="/signup" className="text-accent hover:text-accent-light transition-colors font-medium">
             Sign up
           </a>

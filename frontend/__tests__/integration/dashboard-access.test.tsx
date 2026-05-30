@@ -20,7 +20,7 @@ vi.mock('@/lib/hooks/useAuth', () => ({
 
 // Mock fetch
 const mockFetch = vi.fn()
-global.fetch = mockFetch as any
+global.fetch = mockFetch as unknown as typeof fetch
 
 describe('Dashboard Access', () => {
   beforeEach(() => {

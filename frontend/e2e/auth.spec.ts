@@ -35,11 +35,6 @@ test.describe('Authentication Flow', () => {
     // Wait for network to settle
     await page.waitForLoadState('networkidle')
 
-    // Should see an error message (either in alert or in text)
-    // The error could show up in the form or as a validation message
-    const errorText = await page.locator('text=/invalid credentials|login failed|error/i').first().isVisible().catch(() => false)
-    const isStillOnLoginPage = page.url().includes('/login')
-
     // Should stay on login page (most important assertion)
     await expect(page).toHaveURL('/login')
   })

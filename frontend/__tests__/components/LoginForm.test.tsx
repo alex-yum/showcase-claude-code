@@ -211,7 +211,7 @@ describe('LoginForm - 401 Error Handling', () => {
     const user = userEvent.setup()
     // Create ApiError with correct shape
     class ApiError extends Error {
-      constructor(public status: number, public data: any, message?: string) {
+      constructor(public status: number, public data: unknown, message?: string) {
         super(message || 'API Error')
         this.name = 'ApiError'
       }
@@ -235,7 +235,7 @@ describe('LoginForm - 401 Error Handling', () => {
     const user = userEvent.setup()
     // Create ApiError with correct shape
     class ApiError extends Error {
-      constructor(public status: number, public data: any, message?: string) {
+      constructor(public status: number, public data: unknown, message?: string) {
         super(message || 'API Error')
         this.name = 'ApiError'
       }

@@ -176,7 +176,7 @@ test.describe('Dashboard', () => {
     expect(page.url()).toContain('/dashboard')
   })
 
-  test('order card hover animation works', async ({ page }) => {
+  test('order card hover animation works', async () => {
     // Placeholder test - will be enhanced with backend
     expect(true).toBe(true)
   })
@@ -203,7 +203,7 @@ test.describe('Dashboard', () => {
     expect(count).toBeGreaterThanOrEqual(0)
   })
 
-  test('product wishlist toggle works', async ({ page }) => {
+  test('product wishlist toggle works', async () => {
     // Placeholder test - will be enhanced with backend
     expect(true).toBe(true)
   })

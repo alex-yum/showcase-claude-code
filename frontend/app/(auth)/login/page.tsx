@@ -53,7 +53,7 @@ export default function LoginPage() {
           {/* Tagline */}
           <div className="pt-4 border-t border-accent/20">
             <p className="font-body text-sm text-gray-400 italic">
-              "Luxury is in each detail" — Hubert de Givenchy
+              &ldquo;Luxury is in each detail&rdquo; &mdash; Hubert de Givenchy
             </p>
           </div>
         </div>

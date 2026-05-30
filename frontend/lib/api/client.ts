@@ -3,7 +3,7 @@ import { API_CONFIG } from './config'
 export class ApiError extends Error {
   constructor(
     public status: number,
-    public data: any,
+    public data: unknown,
     message?: string
   ) {
     super(message || 'API Error')
@@ -45,7 +45,7 @@ export class ApiClient {
     })
   }
 
-  async post<T>(endpoint: string, body?: any, options?: RequestInit): Promise<T> {
+  async post<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
