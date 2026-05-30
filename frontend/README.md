@@ -107,6 +107,59 @@ npm run test         # Run tests
 npm run test:coverage # Coverage report
 ```
 
+## CI/CD and Pre-commit Hooks
+
+### Pre-commit Hook
+
+The project uses a pre-commit hook that automatically runs tests when you commit frontend changes:
+
+**What runs:**
+- Unit and integration tests (`npm test -- --run`)
+- ESLint linting (`npm run lint`)
+
+**Skipped in pre-commit:**
+- E2E tests (run in CI only for speed)
+- Visual regression tests (run in CI only)
+
+**Setup:**
+The hook is already installed at `.git/hooks/pre-commit`. If you need to reinstall:
+```bash
+chmod +x .git/hooks/pre-commit
+```
+
+**Bypass hook (not recommended):**
+```bash
+git commit --no-verify
+```
+
+### GitHub Actions CI
+
+**Workflow:** `.github/workflows/frontend-ci.yml`
+
+**Triggers:**
+- Push to main branch
+- Pull requests to main branch
+- Only when frontend files change
+
+**What runs:**
+1. ESLint validation
+2. Unit and integration tests with coverage
+3. Production build validation
+4. E2E tests across 5 browsers:
+   - Desktop: Chromium, Firefox, WebKit
+   - Mobile: Pixel 5 (Chrome), iPhone 12 (Safari)
+5. Visual regression tests
+
+**Artifacts:**
+- Coverage reports (HTML)
+- Playwright HTML reports
+- Screenshots and videos (on test failures)
+
+**Viewing results:**
+1. Go to the Actions tab in GitHub
+2. Click on the workflow run
+3. Check job logs and download artifacts
+
 ## Architecture
 
 - **Next.js 15** with App Router
