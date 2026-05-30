@@ -32,7 +32,7 @@ docker-compose up -d
 ### Run the service
 
 ```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 ### Run tests
@@ -52,7 +52,7 @@ mvn test
 | SPRING_DATA_REDIS_PORT | Redis port | 6379 | Yes |
 | JWT_SECRET | Secret key for JWT signing | dev-secret-key-change-in-production | Yes |
 | JWT_EXPIRATION | Token expiration (milliseconds) | 3600000 (1 hour) | No |
-| SERVER_PORT | Application port | 8081 | No |
+| SERVER_PORT | Application port | 8080 | No |
 | SPRING_PROFILES_ACTIVE | Active profile (dev/prod) | dev | No |
 
 **Production Setup:**
@@ -67,7 +67,7 @@ Register a new user account.
 
 **Request:**
 ```bash
-curl -X POST http://localhost:8081/api/v1/auth/register \
+curl -X POST http://localhost:8080/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -100,7 +100,7 @@ Authenticate user and receive JWT token.
 
 **Request:**
 ```bash
-curl -X POST http://localhost:8081/api/v1/auth/login \
+curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -137,7 +137,7 @@ Logout user and invalidate token.
 
 **Request:**
 ```bash
-curl -X POST http://localhost:8081/api/v1/auth/logout \
+curl -X POST http://localhost:8080/api/v1/auth/logout \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
@@ -153,7 +153,7 @@ Validate JWT token and retrieve user information.
 
 **Request:**
 ```bash
-curl -X GET http://localhost:8081/api/v1/auth/validate \
+curl -X GET http://localhost:8080/api/v1/auth/validate \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
@@ -205,7 +205,7 @@ docker ps --filter "name=auth" --format "table {{.Names}}\t{{.Status}}"
 **Solution:**
 ```bash
 # Check what's using the ports
-lsof -i :8081  # Application port
+lsof -i :8080  # Application port
 lsof -i :5432  # PostgreSQL
 lsof -i :6379  # Redis
 
@@ -298,7 +298,7 @@ mvn clean install -DskipTests
 **Useful for debugging:**
 ```bash
 # Check application health
-curl http://localhost:8081/actuator/health
+curl http://localhost:8080/actuator/health
 
 # Expected response:
 # {"status":"UP"}
