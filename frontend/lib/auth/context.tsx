@@ -3,13 +3,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { authClient } from './client'
 import { authApi } from '../api/auth'
-import type { User, LoginRequest } from '../types/auth'
+import type { User, LoginRequest, LoginResponse } from '../types/auth'
 
 interface AuthContextValue {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
   login: (credentials: LoginRequest) => Promise<void>
+  setSession: (response: LoginResponse) => void
   logout: () => Promise<void>
 }
 
@@ -34,6 +35,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser({ userId: response.userId, email: response.email })
   }
 
+  const setSession = (response: LoginResponse) => {
+    authClient.login(response)
+    setUser({ userId: response.userId, email: response.email })
+  }
+
   const logout = async () => {
     await authApi.logout()
     authClient.logout()
@@ -47,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: user !== null,
         isLoading,
         login,
+        setSession,
         logout,
       }}
     >

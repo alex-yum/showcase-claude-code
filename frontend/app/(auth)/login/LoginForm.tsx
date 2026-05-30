@@ -17,7 +17,7 @@ export default function LoginForm() {
   const [apiError, setApiError] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login: authLogin } = useAuth()
+  const { setSession } = useAuth()
 
   const {
     register,
@@ -43,12 +43,16 @@ export default function LoginForm() {
         password: data.password,
       })
 
-      // Update auth context
-      await authLogin(response as any)
+      // Update auth context (no double API call)
+      setSession(response)
 
-      // Redirect to returnTo URL or dashboard
+      // Validate returnTo is a relative path (prevent open redirect)
       const returnTo = searchParams.get('returnTo') || '/dashboard'
-      router.push(returnTo)
+      const safeReturnTo = returnTo.startsWith('/') && !returnTo.startsWith('//')
+        ? returnTo
+        : '/dashboard'
+
+      router.push(safeReturnTo)
     } catch (error: any) {
       setApiError(error.message || 'Login failed. Please try again.')
     }
@@ -90,7 +94,7 @@ export default function LoginForm() {
             className="w-full"
           />
           {errors.email && (
-            <p className="mt-1 font-body text-sm text-red-400">
+            <p className="mt-1 font-body text-sm text-red-400" role="alert" aria-live="polite">
               {errors.email.message}
             </p>
           )}
@@ -125,7 +129,7 @@ export default function LoginForm() {
             </button>
           </div>
           {errors.password && (
-            <p className="mt-1 font-body text-sm text-red-400">
+            <p className="mt-1 font-body text-sm text-red-400" role="alert" aria-live="polite">
               {errors.password.message}
             </p>
           )}

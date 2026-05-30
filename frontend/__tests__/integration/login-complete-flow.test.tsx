@@ -23,10 +23,11 @@ vi.mock('next/navigation', () => ({
 }))
 
 // Mock useAuth
-const mockLogin = vi.fn()
+const mockSetSession = vi.fn()
 vi.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({
-    login: mockLogin,
+    login: vi.fn(),
+    setSession: mockSetSession,
     user: null,
     isAuthenticated: false,
     logout: vi.fn(),
@@ -71,7 +72,7 @@ describe('LoginForm - Complete Integration Flow', () => {
 
     // Verify context was updated
     await waitFor(() => {
-      expect(mockLogin).toHaveBeenCalledWith(mockResponse)
+      expect(mockSetSession).toHaveBeenCalledWith(mockResponse)
     })
 
     // Verify redirect

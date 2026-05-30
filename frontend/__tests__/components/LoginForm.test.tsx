@@ -24,10 +24,11 @@ vi.mock('next/navigation', () => ({
 }))
 
 // Mock useAuth
-const mockAuthLogin = vi.fn()
+const mockSetSession = vi.fn()
 vi.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({
-    login: mockAuthLogin,
+    login: vi.fn(),
+    setSession: mockSetSession,
     logout: vi.fn(),
     user: null,
     isAuthenticated: false,
@@ -54,8 +55,20 @@ describe('LoginForm', () => {
 })
 
 describe('LoginForm - Form Submission', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('submits form with correct data', async () => {
     const user = userEvent.setup()
+    vi.mocked(authApi.authApi.login).mockResolvedValue({
+      accessToken: 'mock-token',
+      tokenType: 'Bearer',
+      expiresIn: 86400000,
+      userId: 1,
+      email: 'test@example.com',
+    })
+
     render(<LoginForm />)
 
     // Fill in the form
@@ -66,10 +79,19 @@ describe('LoginForm - Form Submission', () => {
     // Submit the form
     await user.click(screen.getByRole('button', { name: /sign in/i }))
 
-    // Form should have been submitted (we'll check this via console log for now)
+    // Verify API was called and session was set
     await waitFor(() => {
-      // This will fail initially because we don't have form handling yet
-      expect(true).toBe(true)
+      expect(authApi.authApi.login).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'Test123!@#',
+      })
+      expect(mockSetSession).toHaveBeenCalledWith({
+        accessToken: 'mock-token',
+        tokenType: 'Bearer',
+        expiresIn: 86400000,
+        userId: 1,
+        email: 'test@example.com',
+      })
     })
   })
 })
@@ -187,8 +209,14 @@ describe('LoginForm - 401 Error Handling', () => {
 
   it('displays 401 error banner for invalid credentials', async () => {
     const user = userEvent.setup()
-    const error = new Error('Invalid credentials')
-    error.name = '401'
+    // Create ApiError with correct shape
+    class ApiError extends Error {
+      constructor(public status: number, public data: any, message?: string) {
+        super(message || 'API Error')
+        this.name = 'ApiError'
+      }
+    }
+    const error = new ApiError(401, { message: 'Invalid credentials' }, 'Invalid credentials')
     vi.mocked(authApi.authApi.login).mockRejectedValue(error)
 
     render(<LoginForm />)
@@ -205,8 +233,14 @@ describe('LoginForm - 401 Error Handling', () => {
 
   it('clears error banner on retry', async () => {
     const user = userEvent.setup()
-    const error = new Error('Invalid credentials')
-    error.name = '401'
+    // Create ApiError with correct shape
+    class ApiError extends Error {
+      constructor(public status: number, public data: any, message?: string) {
+        super(message || 'API Error')
+        this.name = 'ApiError'
+      }
+    }
+    const error = new ApiError(401, { message: 'Invalid credentials' }, 'Invalid credentials')
     vi.mocked(authApi.authApi.login)
       .mockRejectedValueOnce(error)
       .mockResolvedValueOnce({
