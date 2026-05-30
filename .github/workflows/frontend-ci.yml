@@ -29,24 +29,20 @@ jobs:
           cache-dependency-path: 'frontend/package-lock.json'
 
       - name: Install dependencies
-        run: |
-          cd frontend
-          npm ci
+        working-directory: ./frontend
+        run: npm ci
 
       - name: Run ESLint
-        run: |
-          cd frontend
-          npm run lint
+        working-directory: ./frontend
+        run: npm run lint
 
       - name: Run TypeScript type checking
-        run: |
-          cd frontend
-          npx tsc --noEmit
+        working-directory: ./frontend
+        run: npx tsc --noEmit
 
       - name: Run unit and integration tests
-        run: |
-          cd frontend
-          npm run test:coverage
+        working-directory: ./frontend
+        run: npm run test:coverage
 
       - name: Upload coverage reports
         if: always()
@@ -56,19 +52,16 @@ jobs:
           path: frontend/coverage/
 
       - name: Build application
-        run: |
-          cd frontend
-          npm run build
+        working-directory: ./frontend
+        run: npm run build
 
       - name: Install Playwright browsers
-        run: |
-          cd frontend
-          npx playwright install --with-deps
+        working-directory: ./frontend
+        run: npx playwright install --with-deps
 
       - name: Run E2E tests
-        run: |
-          cd frontend
-          npm run test:e2e
+        working-directory: ./frontend
+        run: npm run test:e2e
 
       - name: Upload E2E test results
         if: always()
@@ -86,8 +79,8 @@ jobs:
 
       - name: Test Summary
         if: always()
+        working-directory: ./frontend
         run: |
-          cd frontend
           echo "## Frontend Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ -d "coverage" ]; then
