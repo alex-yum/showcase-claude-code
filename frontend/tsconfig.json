@@ -29,7 +29,6 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "jsx": "preserve",
-    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./*"
