@@ -12,7 +12,7 @@ import { authApi } from '@/lib/api/auth'
 import { useAuth } from '@/lib/hooks/useAuth'
 import type { LoginRequest } from '@/lib/types/auth'
 
-export default function LoginForm() {
+function LoginFormInner() {
   const [showPassword, setShowPassword] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
   const router = useRouter()
@@ -201,5 +201,24 @@ export default function LoginForm() {
         </p>
       </form>
     </div>
+  )
+}
+
+export default function LoginForm() {
+  return (
+    <React.Suspense fallback={
+      <div className="bg-surface/40 backdrop-blur-xl border border-accent/10 rounded-2xl p-8 shadow-2xl animate-scale-in">
+        <div className="mb-8">
+          <h2 className="font-display text-3xl font-bold text-white mb-2">
+            Sign In
+          </h2>
+          <p className="font-body text-sm text-gray-400">
+            Loading...
+          </p>
+        </div>
+      </div>
+    }>
+      <LoginFormInner />
+    </React.Suspense>
   )
 }

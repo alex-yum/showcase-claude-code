@@ -38,6 +38,11 @@ jobs:
           cd frontend
           npm run lint
 
+      - name: Run TypeScript type checking
+        run: |
+          cd frontend
+          npx tsc --noEmit
+
       - name: Run unit and integration tests
         run: |
           cd frontend

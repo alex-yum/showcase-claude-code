@@ -43,7 +43,7 @@ describe('LoginForm - Complete Integration Flow', () => {
     const user = userEvent.setup()
     const mockResponse = {
       accessToken: 'mock-jwt-token',
-      tokenType: 'Bearer',
+      tokenType: 'Bearer' as const,
       expiresIn: 86400000,
       userId: 1,
       email: 'test@example.com',
@@ -85,7 +85,7 @@ describe('LoginForm - Complete Integration Flow', () => {
     const user = userEvent.setup()
     const mockResponse = {
       accessToken: 'mock-jwt-token',
-      tokenType: 'Bearer',
+      tokenType: 'Bearer' as const,
       expiresIn: 86400000,
       userId: 1,
       email: 'test@example.com',

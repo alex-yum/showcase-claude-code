@@ -13,7 +13,6 @@ describe('ProductCard', () => {
     price: 24.99,
     rating: 4.5,
     reviewCount: 234,
-    imageUrl: null,
     inStock: true,
   }
 
