@@ -3,7 +3,10 @@ import { test, expect } from '@playwright/test'
 test.describe('Authentication Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Start from login page
-    await page.goto('/login')
+    await page.goto('/login', { waitUntil: 'networkidle' })
+
+    // Wait for MSW to be ready (it starts async in MSWProvider)
+    await page.waitForTimeout(1000)
   })
 
   test('user can log in with valid credentials', async ({ page }) => {
@@ -15,13 +18,11 @@ test.describe('Authentication Flow', () => {
     // Submit the form
     await page.getByRole('button', { name: /sign in/i }).click()
 
-    // Should redirect to dashboard or away from login page
-    // Dashboard page may not exist, but button should be disabled while submitting
+    // Should redirect to dashboard
     await page.waitForLoadState('networkidle')
 
-    // Either redirected to dashboard, or still on login (if dashboard doesn't exist)
-    const url = page.url()
-    expect(url).toMatch(/dashboard|login/)
+    // Should be redirected to dashboard page
+    await expect(page).toHaveURL('/dashboard')
   })
 
   test('user sees error with invalid credentials', async ({ page }) => {

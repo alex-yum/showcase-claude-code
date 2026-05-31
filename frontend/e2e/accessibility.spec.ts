@@ -3,7 +3,8 @@ import AxeBuilder from '@axe-core/playwright'
 
 test.describe('Login Page Accessibility', () => {
   test('should not have any automatically detectable accessibility issues', async ({ page }) => {
-    await page.goto('/login')
+    await page.goto('/login', { waitUntil: 'networkidle' })
+    await page.waitForTimeout(1000)
 
     const accessibilityScanResults = await new AxeBuilder({ page }).analyze()
 
@@ -107,9 +108,8 @@ test.describe('Login Page Accessibility', () => {
     // Wait for page to respond
     await page.waitForLoadState('networkidle').catch(() => {})
 
-    // Verify form was submitted (URL should change or error should appear)
-    const finalUrl = page.url()
-    expect(finalUrl).toContain('localhost')
+    // Verify form was submitted and redirected to dashboard
+    await expect(page).toHaveURL('/dashboard')
   })
 
   test('animated orbs are hidden from screen readers', async ({ page }) => {

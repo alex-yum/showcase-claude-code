@@ -20,10 +20,11 @@ test.describe('Dashboard', () => {
     // Navigate to dashboard without authentication
     await page.goto('/dashboard', { waitUntil: 'load' })
 
-    // Should redirect to login page (either immediately or via client-side redirect)
-    // Wait for either login URL or check current URL
-    await page.waitForTimeout(1000) // Allow time for client-side redirect
-    expect(page.url()).toMatch(/\/(login|dashboard)/)
+    // Wait for MSW to initialize
+    await page.waitForTimeout(1000)
+
+    // Should redirect to login page
+    await expect(page).toHaveURL('/login')
   })
 
   test('dashboard page loads with authentication', async ({ page }) => {
@@ -33,39 +34,11 @@ test.describe('Dashboard', () => {
       localStorage.setItem('user', JSON.stringify({ userId: 1, email: 'test@example.com' }))
     })
 
-    // Mock API responses
-    await page.route('**/api/v1/**', async route => {
-      const url = route.request().url()
+    // Navigate to dashboard (MSW will handle API mocking)
+    await page.goto('/dashboard', { waitUntil: 'load' })
 
-      if (url.includes('/orders')) {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ orders: [] })
-        })
-      } else if (url.includes('/products')) {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ products: [] })
-        })
-      } else if (url.includes('/stats')) {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            ordersThisMonth: 0,
-            totalSpent: 0,
-            loyaltyPoints: 0
-          })
-        })
-      } else {
-        await route.continue()
-      }
-    })
-
-    // Navigate to dashboard
-    await page.goto('/dashboard')
+    // Wait for MSW to initialize
+    await page.waitForTimeout(1000)
 
     // Verify page loaded (check for header)
     await expect(page.locator('text=ShopHub').first()).toBeVisible()
@@ -78,15 +51,11 @@ test.describe('Dashboard', () => {
       localStorage.setItem('user', JSON.stringify({ userId: 1, email: 'test@example.com' }))
     })
 
-    await page.route('**/api/v1/**', async route => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ orders: [], products: [], ordersThisMonth: 0, totalSpent: 0, loyaltyPoints: 0 })
-      })
-    })
 
-    await page.goto('/dashboard')
+    await page.goto('/dashboard', { waitUntil: 'load' })
+
+    // Wait for MSW to initialize
+    await page.waitForTimeout(1000)
 
     // Check for welcome message - exact text depends on implementation
     const h1Count = await page.locator('h1').count()
@@ -99,13 +68,6 @@ test.describe('Dashboard', () => {
       localStorage.setItem('user', JSON.stringify({ userId: 1, email: 'test@example.com' }))
     })
 
-    await page.route('**/api/v1/**', async route => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ orders: [], products: [], ordersThisMonth: 0, totalSpent: 0, loyaltyPoints: 0 })
-      })
-    })
 
     await page.goto('/dashboard')
 
@@ -120,13 +82,6 @@ test.describe('Dashboard', () => {
       localStorage.setItem('user', JSON.stringify({ userId: 1, email: 'test@example.com' }))
     })
 
-    await page.route('**/api/v1/**', async route => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ orders: [], products: [], ordersThisMonth: 0, totalSpent: 0, loyaltyPoints: 0 })
-      })
-    })
 
     await page.goto('/dashboard')
 
@@ -141,13 +96,6 @@ test.describe('Dashboard', () => {
       localStorage.setItem('user', JSON.stringify({ userId: 1, email: 'test@example.com' }))
     })
 
-    await page.route('**/api/v1/**', async route => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ orders: [], products: [], ordersThisMonth: 0, totalSpent: 0, loyaltyPoints: 0 })
-      })
-    })
 
     await page.goto('/dashboard')
 
@@ -187,13 +135,6 @@ test.describe('Dashboard', () => {
       localStorage.setItem('user', JSON.stringify({ userId: 1, email: 'test@example.com' }))
     })
 
-    await page.route('**/api/v1/**', async route => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ orders: [], products: [], ordersThisMonth: 0, totalSpent: 0, loyaltyPoints: 0 })
-      })
-    })
 
     await page.goto('/dashboard')
 

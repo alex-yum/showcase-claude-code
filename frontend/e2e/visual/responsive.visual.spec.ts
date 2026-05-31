@@ -18,68 +18,11 @@ test.describe('Responsive Dashboard', () => {
       localStorage.setItem('user', JSON.stringify({ userId: 1, email: 'test@example.com' }))
     })
 
-    // Mock API responses with realistic data
-    await page.route('**/api/v1/**', async route => {
-      const url = route.request().url()
+    // Navigate to dashboard (MSW will handle API mocking)
+    await page.goto('/dashboard', { waitUntil: 'networkidle' })
 
-      if (url.includes('/orders')) {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            orders: [
-              {
-                id: '1234',
-                orderNumber: '#1234',
-                date: '2026-05-28',
-                status: 'Delivered',
-                total: 79.99,
-                items: [{ name: 'Premium Cotton T-Shirt', quantity: 2 }]
-              }
-            ]
-          })
-        })
-      } else if (url.includes('/products')) {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            products: [
-              {
-                id: '1',
-                name: 'Premium Cotton T-Shirt',
-                price: 39.99,
-                image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400',
-                category: 'Clothing'
-              },
-              {
-                id: '2',
-                name: 'Designer Jeans',
-                price: 129.50,
-                image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400',
-                category: 'Clothing'
-              }
-            ]
-          })
-        })
-      } else if (url.includes('/stats')) {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            ordersThisMonth: 5,
-            totalSpent: 237.50,
-            loyaltyPoints: 2450
-          })
-        })
-      } else {
-        await route.continue()
-      }
-    })
-
-    // Navigate to dashboard
-    await page.goto('/dashboard')
-    await page.waitForLoadState('networkidle')
+    // Wait for MSW to initialize
+    await page.waitForTimeout(1000)
   })
 
   for (const breakpoint of BREAKPOINTS) {

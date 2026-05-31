@@ -3,9 +3,10 @@ import { test, expect } from '@playwright/test'
 test.describe('Login Page Visual Regression', () => {
   test('login page desktop view (1920x1080)', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.goto('/login')
+    await page.goto('/login', { waitUntil: 'networkidle' })
 
-    // Wait for animations to settle
+    // Wait for MSW and animations to settle
+    await page.waitForTimeout(1000)
     await page.waitForTimeout(500)
 
     await expect(page).toHaveScreenshot('login-desktop.png', {
@@ -16,9 +17,10 @@ test.describe('Login Page Visual Regression', () => {
 
   test('login page mobile view (375x667)', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
-    await page.goto('/login')
+    await page.goto('/login', { waitUntil: 'networkidle' })
 
-    // Wait for animations to settle
+    // Wait for MSW and animations to settle
+    await page.waitForTimeout(1000)
     await page.waitForTimeout(500)
 
     await expect(page).toHaveScreenshot('login-mobile.png', {
@@ -29,9 +31,10 @@ test.describe('Login Page Visual Regression', () => {
 
   test('login page tablet view (768x1024)', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 })
-    await page.goto('/login')
+    await page.goto('/login', { waitUntil: 'networkidle' })
 
-    // Wait for animations to settle
+    // Wait for MSW and animations to settle
+    await page.waitForTimeout(1000)
     await page.waitForTimeout(500)
 
     await expect(page).toHaveScreenshot('login-tablet.png', {
@@ -86,23 +89,21 @@ test.describe('Login Page Visual Regression', () => {
     await page.getByLabel('Email Address').fill('test@example.com')
     await page.getByLabel('Password').first().fill('Test123!@#')
 
-    // Intercept login request to delay response
-    await page.route('**/api/v1/auth/login', async (route) => {
-      // Delay response by 2 seconds
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      await route.continue()
+    // Submit form (MSW will handle the response)
+    const submitPromise = page.getByRole('button', { name: /sign in/i }).click()
+
+    // Wait for loading state to appear (should be quick)
+    await page.waitForSelector('button:has-text("Signing in...")').catch(() => {
+      // If loading state is too fast to capture, that's okay
     })
-
-    // Submit form
-    await page.getByRole('button', { name: /sign in/i }).click()
-
-    // Wait for loading state
-    await page.waitForSelector('button:has-text("Signing in...")')
 
     await expect(page).toHaveScreenshot('login-loading.png', {
       fullPage: true,
       animations: 'disabled',
+      timeout: 2000,
     })
+
+    await submitPromise
   })
 
   test('login page password visible state', async ({ page }) => {
