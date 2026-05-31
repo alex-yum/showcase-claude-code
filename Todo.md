@@ -35,6 +35,7 @@
 - [ ] Increase frontend test coverage.
 - [ ] Frontend module issues:
      - [ ] CI coverage failed.
-     - [ ] http://localhost page not redirecting to login page.
+     - [ ] CI node api deprecation warning.
+     - [ ] http://localhost:3000 page not redirecting to login page.
      - [ ] Reload dashboard resulted in error.
        
