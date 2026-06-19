@@ -18,6 +18,12 @@ vi.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => mockUseAuth(),
 }))
 
+// Mock useMSW - controlled per test
+const mockUseMSW = vi.fn()
+vi.mock('@/app/msw-provider', () => ({
+  useMSW: () => mockUseMSW(),
+}))
+
 // Mock fetch
 const mockFetch = vi.fn()
 global.fetch = mockFetch as unknown as typeof fetch
@@ -26,6 +32,8 @@ describe('Dashboard Access', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.setItem('token', 'mock-jwt-token-12345')
+    // Default: MSW is ready
+    mockUseMSW.mockReturnValue({ mswReady: true })
   })
 
   it('authenticated user sees dashboard content', async () => {
@@ -105,5 +113,21 @@ describe('Dashboard Access', () => {
     await waitFor(() => {
       expect(screen.getByText(/welcome back, john/i)).toBeInTheDocument()
     })
+  })
+
+  it('does not fetch data before MSW is ready (page reload race condition)', () => {
+    mockUseMSW.mockReturnValue({ mswReady: false })
+    mockUseAuth.mockReturnValue({
+      user: { userId: 1, email: 'test@example.com' },
+      isAuthenticated: true,
+      isLoading: false,
+    })
+
+    render(<DashboardPage />)
+
+    // fetch must NOT be called while MSW is still initializing
+    expect(mockFetch).not.toHaveBeenCalled()
+    // Loading spinner is shown while waiting for MSW
+    expect(screen.getByText(/loading/i)).toBeInTheDocument()
   })
 })

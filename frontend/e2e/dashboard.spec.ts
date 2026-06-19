@@ -23,8 +23,8 @@ test.describe('Dashboard', () => {
     // Wait for MSW to initialize
     await page.waitForTimeout(1000)
 
-    // Should redirect to login page
-    await expect(page).toHaveURL('/login')
+    // Should redirect to login page (with optional returnTo query param)
+    await expect(page).toHaveURL(/\/login/)
   })
 
   test('dashboard page loads with authentication', async ({ page }) => {
@@ -122,6 +122,26 @@ test.describe('Dashboard', () => {
 
     // Verify navigation completed
     expect(page.url()).toContain('/dashboard')
+  })
+
+  test('dashboard survives page reload without showing an error', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('token', 'mock-jwt-token-12345')
+      localStorage.setItem('user', JSON.stringify({ userId: 1, email: 'test@example.com' }))
+    })
+
+    // First navigation
+    await page.goto('/dashboard', { waitUntil: 'load' })
+    await page.waitForTimeout(1500)
+
+    // Reload the page — this is the scenario that previously failed
+    await page.reload({ waitUntil: 'load' })
+    await page.waitForTimeout(1500)
+
+    // Should still be on the dashboard, not redirected or showing an error
+    await expect(page).toHaveURL('/dashboard')
+    await expect(page.locator('text=Error Loading Dashboard')).not.toBeVisible()
+    await expect(page.locator('text=ShopHub').first()).toBeVisible()
   })
 
   test('order card hover animation works', async () => {

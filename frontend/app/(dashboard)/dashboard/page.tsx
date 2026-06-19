@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useProtectedRoute } from '@/lib/hooks/useProtectedRoute'
 import { useAuth } from '@/lib/hooks/useAuth'
+import { useMSW } from '@/app/msw-provider'
 import OrderCard from './OrderCard'
 import QuickActions from './QuickActions'
 import StatsCard from './StatsCard'
@@ -14,6 +15,7 @@ export default function DashboardPage() {
   useProtectedRoute()
 
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { mswReady } = useMSW()
   const [orders, setOrders] = useState<Order[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [stats, setStats] = useState<UserStats | null>(null)
@@ -21,8 +23,8 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Don't fetch if not authenticated or still loading auth
-    if (!isAuthenticated || authLoading) {
+    // Don't fetch if not authenticated, still loading auth, or MSW not ready
+    if (!isAuthenticated || authLoading || !mswReady) {
       return
     }
 
@@ -74,7 +76,7 @@ export default function DashboardPage() {
     }
 
     fetchDashboardData()
-  }, [isAuthenticated, authLoading])
+  }, [isAuthenticated, authLoading, mswReady])
 
   if (loading || authLoading) {
     return (
