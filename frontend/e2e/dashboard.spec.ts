@@ -20,11 +20,8 @@ test.describe('Dashboard', () => {
     // Navigate to dashboard without authentication
     await page.goto('/dashboard', { waitUntil: 'load' })
 
-    // Wait for MSW to initialize
-    await page.waitForTimeout(1000)
-
-    // Should redirect to login page
-    await expect(page).toHaveURL('/login')
+    // Should redirect to login page with return target preserved
+    await expect(page).toHaveURL('/login?returnTo=%2Fdashboard')
   })
 
   test('dashboard page loads with authentication', async ({ page }) => {
@@ -37,11 +34,25 @@ test.describe('Dashboard', () => {
     // Navigate to dashboard (MSW will handle API mocking)
     await page.goto('/dashboard', { waitUntil: 'load' })
 
-    // Wait for MSW to initialize
-    await page.waitForTimeout(1000)
-
     // Verify page loaded (check for header)
     await expect(page.locator('text=ShopHub').first()).toBeVisible()
+  })
+
+  test('dashboard remains loaded after login and page reload', async ({ page }) => {
+    await page.goto('/login', { waitUntil: 'load' })
+
+    await page.getByLabel('Email Address').fill('test@example.com')
+    await page.getByRole('textbox', { name: 'Password' }).fill('Test123!@#')
+    await page.getByRole('button', { name: 'Sign In' }).click()
+
+    await expect(page).toHaveURL('/dashboard')
+    await expect(page.getByRole('heading', { name: 'Welcome back, test' })).toBeVisible({ timeout: 15000 })
+
+    await page.reload({ waitUntil: 'load' })
+
+    await expect(page).toHaveURL('/dashboard')
+    await expect(page.getByRole('heading', { name: 'Welcome back, test' })).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('Error Loading Dashboard')).not.toBeVisible()
   })
 
   test('displays welcome message with user name', async ({ page }) => {
@@ -53,9 +64,6 @@ test.describe('Dashboard', () => {
 
 
     await page.goto('/dashboard', { waitUntil: 'load' })
-
-    // Wait for MSW to initialize
-    await page.waitForTimeout(1000)
 
     // Check for welcome message - exact text depends on implementation
     const h1Count = await page.locator('h1').count()
@@ -70,6 +78,8 @@ test.describe('Dashboard', () => {
 
 
     await page.goto('/dashboard')
+
+    await expect(page.getByRole('heading', { name: 'Welcome back, test' })).toBeVisible()
 
     // Check that buttons exist (quick actions may vary by implementation)
     const buttonCount = await page.locator('button').count()

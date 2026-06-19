@@ -82,25 +82,34 @@ test.describe('Login Page Accessibility', () => {
   test('form can be completed using only keyboard', async ({ page }) => {
     await page.goto('/login')
 
-    // Tab to email field and fill it
+    // Tab past the skip link to the email field and fill it
     await page.keyboard.press('Tab')
+    if (await page.getByRole('link', { name: /skip to main content/i }).evaluate((el) => document.activeElement === el)) {
+      await page.keyboard.press('Tab')
+    }
+    await expect(page.locator('input#email')).toBeFocused()
     await page.keyboard.type('test@example.com')
 
     // Tab to password field and fill it
     await page.keyboard.press('Tab')
+    await expect(page.locator('input#password')).toBeFocused()
     await page.keyboard.type('Test123!@#')
 
     // Tab through the password visibility toggle button
     await page.keyboard.press('Tab')
+    await expect(page.getByRole('button', { name: /toggle password visibility/i })).toBeFocused()
 
     // Tab through remember me checkbox
     await page.keyboard.press('Tab')
+    await expect(page.locator('input#rememberMe')).toBeFocused()
 
     // Tab through forgot password link
     await page.keyboard.press('Tab')
+    await expect(page.getByRole('link', { name: /forgot password/i })).toBeFocused()
 
     // Tab to sign in button
     await page.keyboard.press('Tab')
+    await expect(page.getByRole('button', { name: /sign in/i })).toBeFocused()
 
     // Verify we can submit with Enter key
     await page.keyboard.press('Enter')

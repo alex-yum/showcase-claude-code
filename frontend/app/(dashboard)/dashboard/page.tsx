@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useProtectedRoute } from '@/lib/hooks/useProtectedRoute'
 import { useAuth } from '@/lib/hooks/useAuth'
+import { useMSWReady } from '@/app/msw-provider'
 import OrderCard from './OrderCard'
 import QuickActions from './QuickActions'
 import StatsCard from './StatsCard'
@@ -10,10 +11,75 @@ import ProductCard from './ProductCard'
 import type { Order } from '@/lib/types/order'
 import type { Product, UserStats } from '@/lib/types/product'
 
+const mockOrders: Order[] = [
+  {
+    orderId: '1234',
+    userId: 1,
+    status: 'shipped',
+    items: [
+      { productId: 1, name: 'Premium Cotton T-Shirt', quantity: 1, price: 44.99 },
+      { productId: 2, name: 'Leather Wallet', quantity: 1, price: 45.00 },
+    ],
+    total: 89.99,
+    createdAt: '2026-05-15T10:30:00Z',
+    updatedAt: '2026-05-16T14:20:00Z',
+  },
+  {
+    orderId: '1233',
+    userId: 1,
+    status: 'delivered',
+    items: [{ productId: 3, name: 'Sunglasses', quantity: 1, price: 45.50 }],
+    total: 45.50,
+    createdAt: '2026-05-10T08:15:00Z',
+    updatedAt: '2026-05-12T16:45:00Z',
+  },
+  {
+    orderId: '1232',
+    userId: 1,
+    status: 'pending',
+    items: [
+      { productId: 4, name: 'Smart Watch', quantity: 1, price: 99.99 },
+      { productId: 5, name: 'Phone Case', quantity: 1, price: 18.00 },
+      { productId: 6, name: 'Screen Protector', quantity: 1, price: 10.00 },
+    ],
+    total: 127.99,
+    createdAt: '2026-05-18T12:00:00Z',
+    updatedAt: '2026-05-18T12:00:00Z',
+  },
+]
+
+const mockProducts: Product[] = [
+  {
+    productId: 10,
+    name: 'Premium Cotton T-Shirt',
+    description: 'Luxuriously soft everyday essential',
+    price: 24.99,
+    rating: 4.5,
+    reviewCount: 234,
+    inStock: true,
+  },
+  {
+    productId: 11,
+    name: 'Wireless Headphones',
+    description: 'Studio-quality sound, premium comfort',
+    price: 89.99,
+    rating: 4.8,
+    reviewCount: 567,
+    inStock: true,
+  },
+]
+
+const mockStats: UserStats = {
+  ordersThisMonth: 5,
+  totalSpent: 237.50,
+  loyaltyPoints: 2450,
+}
+
 export default function DashboardPage() {
   useProtectedRoute()
 
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const mocksReady = useMSWReady()
   const [orders, setOrders] = useState<Order[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [stats, setStats] = useState<UserStats | null>(null)
@@ -22,7 +88,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // Don't fetch if not authenticated or still loading auth
-    if (!isAuthenticated || authLoading) {
+    if (!isAuthenticated || authLoading || !mocksReady) {
       return
     }
 
@@ -67,6 +133,12 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error)
+        if (process.env.NODE_ENV === 'development') {
+          setOrders(mockOrders)
+          setProducts(mockProducts)
+          setStats(mockStats)
+          return
+        }
         setError(error instanceof Error ? error.message : 'Failed to load dashboard data')
       } finally {
         setLoading(false)
@@ -74,7 +146,7 @@ export default function DashboardPage() {
     }
 
     fetchDashboardData()
-  }, [isAuthenticated, authLoading])
+  }, [isAuthenticated, authLoading, mocksReady])
 
   if (loading || authLoading) {
     return (
